@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { 
-  Settings, Palette, Shield, CloudSync, Layout, 
+  Settings, Palette, Shield, Cloud, Layout, 
   Image as ImageIcon, Type, FileText, History, 
   Save, RefreshCw, Plus, Trash2, Globe
 } from 'lucide-react';

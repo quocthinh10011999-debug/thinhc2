@@ -3,7 +3,7 @@ import React from 'react';
 import { 
   Users, Calendar, MessageSquare, ShieldCheck, 
   TrendingUp, Activity, AlertCircle, ArrowUpRight,
-  CloudSync, RefreshCw
+  RefreshCw
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
@@ -93,7 +93,7 @@ const AdminDashboard = () => {
             <h3 className="text-[#d4af37] text-xs font-black uppercase tracking-[0.2em]">Thông tin đồng bộ</h3>
             <div className="space-y-4">
                <div className="flex items-start space-x-3 bg-black/20 p-4 rounded-lg">
-                  <CloudSync className="w-4 h-4 text-[#d4af37] shrink-0 mt-0.5" />
+                  <RefreshCw className="w-4 h-4 text-[#d4af37] shrink-0 mt-0.5" />
                   <p className="text-[11px] leading-relaxed">Dữ liệu được đồng bộ tự động mỗi 10 giây giữa các phiên làm việc.</p>
                </div>
                {!isApiConfigured && (
