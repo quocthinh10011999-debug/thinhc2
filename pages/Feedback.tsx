@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Send, User, ShieldCheck, Loader2, ChevronRight, HelpCircle } from 'lucide-react';
 import { Feedback } from '../types';
+import { getAIResponse } from '../services/geminiService';
 
 const FeedbackPage = () => {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -27,30 +28,33 @@ const FeedbackPage = () => {
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    // Fixed: Removed undefined function call 'plus()'
     e.preventDefault();
     if (!newFeedback.trim()) return;
 
     setIsSubmitting(true);
     
-    // Thay thế AI bằng phản hồi tĩnh
-    const staticResponse = "Cảm ơn ý kiến đóng góp của bạn. Ban Chỉ huy đơn vị đã tiếp nhận thông tin và sẽ xem xét xử lý trong thời gian sớm nhất theo đúng quy định.";
-    
-    // Giả lập một chút độ trễ để tạo cảm giác xử lý
-    setTimeout(() => {
+    try {
+      // Gọi dịch vụ Gemini để nhận phản hồi thông minh thay vì phản hồi tĩnh
+      const aiResponse = await getAIResponse(newFeedback);
+      
       const feedback: Feedback = {
         id: Date.now().toString(),
         author: 'Người dân (Ẩn danh)',
         content: newFeedback,
         date: new Date().toLocaleDateString('vi-VN'),
-        response: staticResponse
+        response: aiResponse
       };
 
       const updated = [feedback, ...feedbacks];
       setFeedbacks(updated);
       localStorage.setItem('vms_feedbacks', JSON.stringify(updated));
       setNewFeedback('');
+    } catch (error) {
+      console.error("Lỗi khi gửi góp ý:", error);
+    } finally {
       setIsSubmitting(false);
-    }, 500);
+    }
   };
 
   return (
@@ -114,7 +118,7 @@ const FeedbackPage = () => {
                             <div className="flex items-start space-x-4">
                             <ShieldCheck className="w-5 h-5 text-[#0f172a] mt-1 shrink-0" />
                             <p className="text-sm text-[#0f172a] leading-loose font-medium">
-                                <span className="font-black uppercase text-[10px] block mb-2">Ban chỉ huy phản hồi:</span>
+                                <span className="font-black uppercase text-[10px] block mb-2">Trực ban tiểu đoàn phản hồi:</span>
                                 {f.response}
                             </p>
                             </div>

@@ -75,7 +75,7 @@ const HeaderMain = () => {
         <div className="hidden lg:flex items-center space-x-10">
           <div className="flex flex-col items-end">
             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Cơ quan thường trực</span>
-            <span className="text-[12px] font-bold text-[#800000] border-b-2 border-[#d4af37]">BAN CHỈ HUY TIỂU ĐOÀN</span>
+            <span className="text-[12px] font-bold text-[#800000] border-b-2 border-[#d4af37]">TRỰC BAN TIỂU ĐOÀN</span>
           </div>
           <div className="relative">
             <input 

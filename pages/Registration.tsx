@@ -76,7 +76,7 @@ const Registration = () => {
             <div className="space-y-3">
                 <h2 className="text-2xl font-black text-[#800000] uppercase tracking-tight">Gửi hồ sơ thành công</h2>
                 <p className="text-slate-500 text-[13px] font-medium leading-relaxed">
-                  Hồ sơ đã được gửi lên hệ thống và đang chờ phê duyệt từ ban chỉ huy.
+                  Hồ sơ đã được gửi lên hệ thống và đang chờ phê duyệt từ trực ban tiểu đoàn.
                 </p>
             </div>
             <div className="py-6 px-4 bg-slate-50 border-l-8 border-[#d4af37]">

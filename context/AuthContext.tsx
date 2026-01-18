@@ -20,7 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accounts, setAccounts] = useState<User[]>([
-    { username: 'admin', role: 'admin', fullName: 'Sĩ quan Chỉ huy' },
+    { username: 'admin', role: 'admin', fullName: 'Sĩ quan Trực ban' },
     { username: 'trucban1', role: 'staff', fullName: 'Trực ban Đại đội 1' }
   ]);
 
@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isValid = (username === 'admin' && password === 'admin123') || (foundAccount && password === '123');
 
     if (isValid) {
-      const authUser = foundAccount || { username: 'admin', role: 'admin' as const, fullName: 'Sĩ quan Chỉ huy' };
+      const authUser = foundAccount || { username: 'admin', role: 'admin' as const, fullName: 'Sĩ quan Trực ban' };
       setUser(authUser);
       localStorage.setItem('vms_user', JSON.stringify(authUser));
       return true;
