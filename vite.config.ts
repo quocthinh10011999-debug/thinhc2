@@ -6,11 +6,16 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    chunkSizeWarningLimit: 1000,
+    emptyOutDir: true,
+    chunkSizeWarningLimit: 2000,
     rollupOptions: {
       input: {
         main: './index.html',
       },
     },
   },
+  server: {
+    port: 3000,
+    strictPort: true,
+  }
 });
