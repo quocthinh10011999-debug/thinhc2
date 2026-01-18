@@ -23,8 +23,9 @@ const Home = () => {
   return (
     <div className="space-y-0">
       <section className="relative py-36 border-b-8 border-[#d4af37] bg-fixed-military" style={{ backgroundImage: `url('${config.homeHeroBg}')` }}>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#800000]/95 via-[#800000]/80 to-transparent"></div>
-        <div className="absolute inset-0 mil-grid opacity-20"></div>
+        {/* Lớp phủ tối màu chuyên nghiệp */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#2d0000]/95 via-[#800000]/70 to-transparent"></div>
+        <div className="absolute inset-0 mil-grid-bg" style={{ opacity: 0.2 }}></div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-left flex flex-col items-start space-y-10">
           <div className="inline-flex items-center space-x-3 bg-black/40 border-l-4 border-[#d4af37] px-6 py-2 backdrop-blur-md">

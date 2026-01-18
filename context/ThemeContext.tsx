@@ -59,7 +59,7 @@ const defaultConfig: ThemeConfig = {
   unitSubName: 'Sư đoàn 324 • Quân khu 4',
   slogan: 'Kỷ cương • Trách nhiệm • Quyết thắng',
   logoUrl: '',
-  gridOpacity: 0.2,
+  gridOpacity: 0.15,
   version: '4.5.0-SYNC',
   
   contactPhone: '024.3333.xxxx',
@@ -105,7 +105,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Đồng bộ cấu hình từ API khi khởi chạy
   const fetchRemoteConfig = useCallback(async () => {
     if (!api.getConfig().baseUrl) return;
     setIsSyncing(true);
@@ -124,11 +123,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     fetchRemoteConfig();
-    const interval = setInterval(fetchRemoteConfig, 30000); // Tự động cập nhật giao diện mỗi 30s
+    const interval = setInterval(fetchRemoteConfig, 30000);
     return () => clearInterval(interval);
   }, [fetchRemoteConfig]);
 
-  // Áp dụng CSS Variables
   useEffect(() => {
     const root = document.documentElement;
     root.style.setProperty('--army-red', config.primaryColor);
@@ -140,9 +138,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       styleTag.id = 'dynamic-theme-styles';
       document.head.appendChild(styleTag);
     }
+    // SỬA ĐỔI: Chỉ áp dụng opacity cho .mil-grid-bg, không phải cho body
     styleTag.innerHTML = `
-      .mil-grid { opacity: ${config.gridOpacity} !important; }
-      body { font-family: Inter, sans-serif !important; }
+      .mil-grid-bg { opacity: ${config.gridOpacity} !important; }
       .bg-primary { background-color: ${config.primaryColor} !important; }
       .text-primary { color: ${config.primaryColor} !important; }
     `;
