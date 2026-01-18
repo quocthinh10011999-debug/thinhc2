@@ -2,6 +2,7 @@
 import React from 'react';
 import { ShieldCheck, Info, FileText, ChevronRight, Scale, Clock, UserCheck, AlertCircle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 const RegulationCard = ({ icon: Icon, title, items, index }: any) => (
   <div className="bg-white p-12 shadow-tactical border-l-8 border-[#800000] hover:border-[#d4af37] transition-all group">
@@ -9,7 +10,9 @@ const RegulationCard = ({ icon: Icon, title, items, index }: any) => (
         <div className="p-4 bg-[#800000] text-[#d4af37] shadow-lg">
             <Icon className="w-6 h-6" />
         </div>
-        <span className="text-5xl font-black text-slate-100 group-hover:text-[#d4af37]/20 transition-colors">0{index}</span>
+        <span className="text-5xl font-black text-slate-100 group-hover:text-[#d4af37]/20 transition-colors">
+          {index < 10 ? `0${index}` : index}
+        </span>
     </div>
     <h3 className="text-xl font-black text-slate-950 uppercase tracking-tight mb-8 leading-tight border-b border-slate-100 pb-4">{title}</h3>
     <ul className="space-y-6">
@@ -24,10 +27,24 @@ const RegulationCard = ({ icon: Icon, title, items, index }: any) => (
 );
 
 const Regulations = () => {
+  const { config } = useTheme();
+
+  // Map default icons to sections based on keywords in title or just rotating them
+  const getIcon = (title: string, index: number) => {
+    const t = title.toLowerCase();
+    if (t.includes('thủ tục') || t.includes('vào cổng')) return UserCheck;
+    if (t.includes('tác phong') || t.includes('văn hóa') || t.includes('nội quy')) return Scale;
+    if (t.includes('thời gian') || t.includes('tiếp dân') || t.includes('giờ')) return Clock;
+    
+    // Default rotation
+    const icons = [ShieldCheck, FileText, UserCheck, Scale, Clock];
+    return icons[index % icons.length];
+  };
+
   return (
     <div className="min-h-screen pb-32">
       {/* Header with Fixed Military Background */}
-      <div className="bg-[#800000] text-white pt-32 pb-40 relative overflow-hidden bg-fixed-military" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1579913741617-3844a30a213a?auto=format&fit=crop&q=80&w=2000')" }}>
+      <div className="bg-[#800000] text-white pt-32 pb-40 relative overflow-hidden bg-fixed-military" style={{ backgroundImage: `url('${config.regHeroBg}')` }}>
         <div className="absolute inset-0 bg-[#800000]/90"></div>
         <div className="absolute inset-0 mil-grid opacity-20"></div>
         
@@ -48,37 +65,16 @@ const Regulations = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-24 relative z-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          <RegulationCard 
-            index={1}
-            icon={UserCheck}
-            title="Thủ tục vào cổng"
-            items={[
-              "Bắt buộc mang theo CCCD/Hộ chiếu bản gốc để đối soát tại cổng gác.",
-              "Đã hoàn thành đăng ký hồ sơ trên cổng điện tử trước ít nhất 24h.",
-              "Trình diện đúng giờ hẹn và tuân thủ kiểm tra an ninh từ vệ binh."
-            ]}
-          />
-          <RegulationCard 
-            index={2}
-            icon={Scale}
-            title="Tác phong văn hóa"
-            items={[
-              "Trang phục lịch sự, kín đáo (không mặc đồ ngắn, đồ phản cảm).",
-              "Tuyệt đối không mang chất cấm, vũ khí, vật liệu dễ cháy nổ.",
-              "Lời nói, hành vi đúng mực, tuân thủ nghiêm ngặt mọi hướng dẫn."
-            ]}
-          />
-          <RegulationCard 
-            index={3}
-            icon={Clock}
-            title="Thời gian tiếp dân"
-            items={[
-              "Ngày thăm: Thứ 7 và Chủ Nhật hàng tuần theo quy định của đơn vị.",
-              "Sáng: 07:30 - 11:00 (Ngưng tiếp nhận mới sau 10:30).",
-              "Chiều: 13:30 - 16:30 (Ngưng tiếp nhận mới sau 16:00)."
-            ]}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {config.regSections.map((section, idx) => (
+            <RegulationCard 
+              key={idx}
+              index={idx + 1}
+              icon={getIcon(section.title, idx)}
+              title={section.title}
+              items={section.items}
+            />
+          ))}
         </div>
 
         <div className="mt-20 bg-white p-12 border-2 border-[#d4af37] shadow-heavy flex flex-col lg:flex-row items-center justify-between gap-12 relative overflow-hidden">

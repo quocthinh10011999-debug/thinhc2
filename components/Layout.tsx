@@ -48,8 +48,12 @@ const HeaderMain = () => {
     <header className="bg-white pt-6 pb-6 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-5 group">
-          <div className="bg-[#800000] p-3 rounded-lg shadow-lg group-hover:scale-105 transition-transform duration-300">
-            <Shield className="w-10 h-10 text-[#d4af37]" />
+          <div className="bg-[#800000] w-16 h-16 rounded-lg shadow-lg group-hover:scale-105 transition-transform duration-300 flex items-center justify-center overflow-hidden">
+            {config.logoUrl ? (
+              <img src={config.logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+            ) : (
+              <Shield className="w-10 h-10 text-[#d4af37]" />
+            )}
           </div>
           <div className="flex flex-col">
             <div className="flex items-center space-x-2">
@@ -61,8 +65,8 @@ const HeaderMain = () => {
                 </div>
               )}
             </div>
-            <h1 className="text-2xl md:text-3xl font-black text-[#800000] uppercase leading-tight tracking-tight mt-0.5">
-              {config.unitName.split(' ')[0]} <span className="text-[#d4af37]">{config.unitName.split(' ').slice(1).join(' ')}</span>
+            <h1 className="text-2xl md:text-3xl font-black uppercase leading-tight tracking-tight mt-0.5" style={{ color: config.logoTextColor1 }}>
+              {config.unitName.split(' ')[0]} <span style={{ color: config.logoTextColor2 }}>{config.unitName.split(' ').slice(1).join(' ')}</span>
             </h1>
             <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">{config.unitSubName}</span>
           </div>
@@ -164,8 +168,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-16 pb-16 border-b border-[#800000]/20">
           <div className="md:col-span-5 space-y-8">
             <div className="flex items-center space-x-5">
-              <div className="bg-[#800000] p-3 rounded-lg">
-                <Shield className="w-10 h-10 text-[#d4af37]" />
+              <div className="bg-[#800000] w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden">
+                {config.logoUrl ? (
+                  <img src={config.logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+                ) : (
+                  <Shield className="w-10 h-10 text-[#d4af37]" />
+                )}
               </div>
               <div>
                 <h3 className="text-[#800000] font-black text-xl uppercase tracking-tight">{config.unitName}</h3>

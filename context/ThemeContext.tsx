@@ -22,6 +22,8 @@ export interface ThemeConfig {
   unitSubName: string;
   slogan: string;
   logoUrl: string;
+  logoTextColor1: string;
+  logoTextColor2: string;
   gridOpacity: number;
   version: string;
 
@@ -59,6 +61,8 @@ const defaultConfig: ThemeConfig = {
   unitSubName: 'Sư đoàn 324 • Quân khu 4',
   slogan: 'Kỷ cương • Trách nhiệm • Quyết thắng',
   logoUrl: '',
+  logoTextColor1: '#800000',
+  logoTextColor2: '#d4af37',
   gridOpacity: 0.15,
   version: '4.5.0-SYNC',
   
@@ -138,7 +142,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       styleTag.id = 'dynamic-theme-styles';
       document.head.appendChild(styleTag);
     }
-    // SỬA ĐỔI: Chỉ áp dụng opacity cho .mil-grid-bg, không phải cho body
     styleTag.innerHTML = `
       .mil-grid-bg { opacity: ${config.gridOpacity} !important; }
       .bg-primary { background-color: ${config.primaryColor} !important; }

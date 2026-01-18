@@ -25,11 +25,15 @@ const AdminSidebar = () => {
     <div className="w-64 bg-[#1a1a1a] text-white flex flex-col h-screen sticky top-0 border-r border-white/10">
       <div className="p-6 border-b border-white/10">
         <div className="flex items-center space-x-3">
-          <div className="bg-[#800000] p-2 rounded">
-            <Shield className="w-6 h-6 text-[#d4af37]" />
+          <div className="bg-[#800000] w-10 h-10 rounded flex items-center justify-center overflow-hidden shrink-0">
+            {config.logoUrl ? (
+              <img src={config.logoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
+            ) : (
+              <Shield className="w-6 h-6 text-[#d4af37]" />
+            )}
           </div>
-          <div>
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-[#d4af37]">Admin Panel</h2>
+          <div className="overflow-hidden">
+            <h2 className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] truncate">Admin Panel</h2>
             <p className="text-[8px] font-bold text-white/40 uppercase">VMS Command v4.0</p>
           </div>
         </div>
