@@ -1,0 +1,7 @@
+{
+  "name": "Hệ thống Quản lý Thăm Quân nhân",
+  "description": "Cổng thông tin và quản lý đăng ký thăm quân nhân chuyên nghiệp, bao gồm quy định, truyền thống đơn vị và hỗ trợ AI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
