@@ -1,6 +1,6 @@
 {
   "name": "Hệ thống Quản lý Thăm Quân nhân VMS",
-  "description": "Cổng thông tin điện tử và quản lý đăng ký thăm quân nhân chuyên nghiệp, hỗ trợ đồng bộ đám mây và trợ lý AI.",
+  "description": "Cổng thông tin điện tử và quản lý đăng ký thăm quân nhân chuyên nghiệp, hỗ trợ đồng bộ dữ liệu tập trung.",
   "requestFramePermissions": [
     "camera",
     "microphone"

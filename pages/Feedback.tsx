@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Send, User, ShieldCheck, Loader2, ChevronRight, HelpCircle } from 'lucide-react';
 import { Feedback } from '../types';
-import { getAIResponse } from '../services/geminiService';
 
 const FeedbackPage = () => {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -32,21 +31,26 @@ const FeedbackPage = () => {
     if (!newFeedback.trim()) return;
 
     setIsSubmitting(true);
-    const aiResponse = await getAIResponse(newFeedback);
     
-    const feedback: Feedback = {
-      id: Date.now().toString(),
-      author: 'Người dân (Ẩn danh)',
-      content: newFeedback,
-      date: new Date().toLocaleDateString('vi-VN'),
-      response: aiResponse
-    };
+    // Thay thế AI bằng phản hồi tĩnh
+    const staticResponse = "Cảm ơn ý kiến đóng góp của bạn. Ban Chỉ huy đơn vị đã tiếp nhận thông tin và sẽ xem xét xử lý trong thời gian sớm nhất theo đúng quy định.";
+    
+    // Giả lập một chút độ trễ để tạo cảm giác xử lý
+    setTimeout(() => {
+      const feedback: Feedback = {
+        id: Date.now().toString(),
+        author: 'Người dân (Ẩn danh)',
+        content: newFeedback,
+        date: new Date().toLocaleDateString('vi-VN'),
+        response: staticResponse
+      };
 
-    const updated = [feedback, ...feedbacks];
-    setFeedbacks(updated);
-    localStorage.setItem('vms_feedbacks', JSON.stringify(updated));
-    setNewFeedback('');
-    setIsSubmitting(false);
+      const updated = [feedback, ...feedbacks];
+      setFeedbacks(updated);
+      localStorage.setItem('vms_feedbacks', JSON.stringify(updated));
+      setNewFeedback('');
+      setIsSubmitting(false);
+    }, 500);
   };
 
   return (
