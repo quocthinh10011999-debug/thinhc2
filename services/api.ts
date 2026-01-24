@@ -1,22 +1,17 @@
 
 import { neon } from '@neondatabase/serverless';
 
-/**
- * Ưu tiên lấy URL từ biến môi trường để bảo mật khi up lên GitHub
- * Nếu không có biến môi trường (trong môi trường preview), sử dụng URL mặc định
- */
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_0gkecK7nTboz@ep-twilight-wildflower-a1yabv5u-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+// Kết nối chính xác theo yêu cầu của người dùng
+const DATABASE_URL = 'postgresql://neondb_owner:npg_0gkecK7nTboz@ep-twilight-wildflower-a1yabv5u-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
 const sql = neon(DATABASE_URL);
 
-/**
- * Service quản lý dữ liệu sử dụng PostgreSQL
- */
 class ApiService {
   /**
-   * Khởi tạo bảng nếu chưa tồn tại
+   * Khởi tạo toàn bộ cấu trúc bảng cần thiết cho hệ thống
    */
   async ensureSchema() {
     try {
+      // 1. Bảng Tư tưởng
       await sql`
         CREATE TABLE IF NOT EXISTS ideology_logs (
           id SERIAL PRIMARY KEY,
@@ -29,6 +24,7 @@ class ApiService {
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
+      // 2. Bảng Đăng ký thăm
       await sql`
         CREATE TABLE IF NOT EXISTS registrations (
           id SERIAL PRIMARY KEY,
@@ -44,6 +40,7 @@ class ApiService {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
+      // 3. Bảng Phản hồi
       await sql`
         CREATE TABLE IF NOT EXISTS feedbacks (
           id SERIAL PRIMARY KEY,
@@ -55,6 +52,7 @@ class ApiService {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
+      // 4. Bảng Cấu hình giao diện
       await sql`
         CREATE TABLE IF NOT EXISTS theme_settings (
           key TEXT PRIMARY KEY,
@@ -62,142 +60,122 @@ class ApiService {
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
+      // 5. Bảng Tài khoản (Mới)
+      await sql`
+        CREATE TABLE IF NOT EXISTS users (
+          username TEXT PRIMARY KEY,
+          full_name TEXT NOT NULL,
+          role TEXT NOT NULL,
+          password TEXT DEFAULT '123',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      
+      // Chèn admin mặc định nếu chưa có
+      await sql`
+        INSERT INTO users (username, full_name, role, password)
+        VALUES ('admin', 'Sĩ quan Trực ban', 'admin', 'admin123')
+        ON CONFLICT (username) DO NOTHING;
+      `;
     } catch (error) {
-      console.error("Schema setup error:", error);
+      console.error("Schema initialization failed:", error);
     }
   }
 
+  // --- QUẢN LÝ TÀI KHOẢN (POSTGRES) ---
+  async getUsers() {
+    return await sql`SELECT username, full_name as "fullName", role FROM users ORDER BY created_at ASC`;
+  }
+
+  async createUser(user: any) {
+    return await sql`
+      INSERT INTO users (username, full_name, role)
+      VALUES (${user.username}, ${user.fullName}, ${user.role})
+      RETURNING username, full_name as "fullName", role
+    `;
+  }
+
+  async deleteUser(username: string) {
+    return await sql`DELETE FROM users WHERE username = ${username} AND username != 'admin'`;
+  }
+
+  // --- QUẢN LÝ TƯ TƯỞNG ---
   async createIdeologyLog(data: any) {
-    try {
-      const result = await sql`
-        INSERT INTO ideology_logs (soldier_name, soldier_unit, status, description, family_context, officer_note)
-        VALUES (${data.soldierName}, ${data.soldierUnit}, ${data.status}, ${data.description}, ${data.familyContext}, ${data.officerNote})
-        RETURNING *
-      `;
-      return { 
-        ...result[0], 
-        soldierName: result[0].soldier_name, 
-        soldierUnit: result[0].soldier_unit,
-        familyContext: result[0].family_context,
-        officerNote: result[0].officer_note,
-        lastUpdated: result[0].updated_at
-      };
-    } catch (error) {
-      console.error("Postgres error:", error);
-      throw error;
-    }
+    const result = await sql`
+      INSERT INTO ideology_logs (soldier_name, soldier_unit, status, description, family_context, officer_note)
+      VALUES (${data.soldierName}, ${data.soldierUnit}, ${data.status}, ${data.description}, ${data.familyContext}, ${data.officerNote})
+      RETURNING id, soldier_name as "soldierName", soldier_unit as "soldierUnit", status, description, updated_at as "lastUpdated"
+    `;
+    return result[0];
   }
 
   async getIdeologyLogs() {
-    try {
-      const rows = await sql`SELECT * FROM ideology_logs ORDER BY updated_at DESC`;
-      return rows.map(r => ({
-        id: r.id.toString(),
-        soldierName: r.soldier_name,
-        soldierUnit: r.soldier_unit,
-        status: r.status,
-        description: r.description,
-        familyContext: r.family_context,
-        officerNote: r.officer_note,
-        lastUpdated: r.updated_at.toLocaleString('vi-VN')
-      }));
-    } catch (error) {
-      console.error("Fetch error:", error);
-      return [];
-    }
+    const rows = await sql`SELECT *, updated_at as "lastUpdated" FROM ideology_logs ORDER BY updated_at DESC`;
+    return rows.map(r => ({
+      ...r,
+      id: r.id.toString(),
+      soldierName: r.soldier_name,
+      soldierUnit: r.soldier_unit,
+      lastUpdated: r.updated_at.toLocaleString('vi-VN')
+    }));
   }
 
+  // --- QUẢN LÝ ĐĂNG KÝ ---
   async createRegistration(data: any) {
-    try {
-      const result = await sql`
-        INSERT INTO registrations (visitor_name, id_number, phone_number, soldier_name, soldier_unit, relationship, visit_date, visit_time)
-        VALUES (${data.visitorName}, ${data.idNumber}, ${data.phoneNumber}, ${data.soldierName}, ${data.soldierUnit}, ${data.relationship}, ${data.visitDate}, ${data.visitTime})
-        RETURNING *
-      `;
-      return result[0];
-    } catch (error) {
-      throw error;
-    }
+    const result = await sql`
+      INSERT INTO registrations (visitor_name, id_number, phone_number, soldier_name, soldier_unit, relationship, visit_date, visit_time)
+      VALUES (${data.visitorName}, ${data.idNumber}, ${data.phoneNumber}, ${data.soldierName}, ${data.soldierUnit}, ${data.relationship}, ${data.visitDate}, ${data.visitTime})
+      RETURNING *
+    `;
+    return result[0];
   }
 
   async getRegistrations() {
-    try {
-      const rows = await sql`SELECT * FROM registrations ORDER BY created_at DESC`;
-      return rows.map(r => ({
-        id: r.id.toString(),
-        visitorName: r.visitor_name,
-        idNumber: r.id_number,
-        phoneNumber: r.phone_number,
-        soldierName: r.soldier_name,
-        soldierUnit: r.soldier_unit,
-        relationship: r.relationship,
-        visitDate: r.visit_date,
-        visitTime: r.visit_time,
-        status: r.status
-      }));
-    } catch (error) {
-      return [];
-    }
+    const rows = await sql`SELECT * FROM registrations ORDER BY created_at DESC`;
+    return rows.map(r => ({
+      ...r,
+      id: r.id.toString(),
+      visitorName: r.visitor_name,
+      idNumber: r.id_number,
+      phoneNumber: r.phone_number,
+      soldierName: r.soldier_name,
+      soldierUnit: r.soldier_unit,
+    }));
   }
 
   async updateRegistration(id: string, data: any) {
-    try {
-      await sql`
-        UPDATE registrations 
-        SET status = ${data.status} 
-        WHERE id = ${parseInt(id)}
-      `;
-    } catch (error) {
-      throw error;
-    }
+    return await sql`UPDATE registrations SET status = ${data.status} WHERE id = ${parseInt(id)}`;
   }
 
+  async deleteRegistration(id: string) {
+    return await sql`DELETE FROM registrations WHERE id = ${parseInt(id)}`;
+  }
+
+  // --- QUẢN LÝ PHẢN HỒI ---
   async createFeedback(data: any) {
-    try {
-      await sql`
-        INSERT INTO feedbacks (author, content, date, response, status)
-        VALUES (${data.author}, ${data.content}, ${data.date}, ${data.response}, ${data.status})
-      `;
-    } catch (error) {
-      throw error;
-    }
+    return await sql`
+      INSERT INTO feedbacks (author, content, date, response, status)
+      VALUES (${data.author}, ${data.content}, ${data.date}, ${data.response}, ${data.status})
+    `;
   }
 
   async getFeedbacks() {
-    try {
-      const rows = await sql`SELECT * FROM feedbacks ORDER BY created_at DESC`;
-      return rows.map(r => ({
-        id: r.id.toString(),
-        author: r.author,
-        content: r.content,
-        date: r.date,
-        response: r.response,
-        status: r.status
-      }));
-    } catch (error) {
-      return [];
-    }
+    const rows = await sql`SELECT * FROM feedbacks ORDER BY created_at DESC`;
+    return rows.map(r => ({ ...r, id: r.id.toString() }));
   }
 
+  // --- CẤU HÌNH GIAO DIỆN ---
   async getThemeConfig() {
-    try {
-      const rows = await sql`SELECT config FROM theme_settings WHERE key = 'global'`;
-      return rows.length > 0 ? rows[0].config : null;
-    } catch (error) {
-      return null;
-    }
+    const rows = await sql`SELECT config FROM theme_settings WHERE key = 'global'`;
+    return rows.length > 0 ? rows[0].config : null;
   }
 
   async saveThemeConfig(config: any) {
-    try {
-      await sql`
-        INSERT INTO theme_settings (key, config) 
-        VALUES ('global', ${config})
-        ON CONFLICT (key) DO UPDATE SET config = ${config}, updated_at = CURRENT_TIMESTAMP
-      `;
-    } catch (error) {
-      console.error("Save config error:", error);
-    }
+    return await sql`
+      INSERT INTO theme_settings (key, config) 
+      VALUES ('global', ${config})
+      ON CONFLICT (key) DO UPDATE SET config = ${config}, updated_at = CURRENT_TIMESTAMP
+    `;
   }
 }
 
