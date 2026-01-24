@@ -8,6 +8,8 @@ export interface RegistrationData {
   relationship: string;
   visitDate: string;
   visitTime: string;
+  status?: 'pending' | 'approved' | 'rejected';
+  id?: string;
 }
 
 export interface Feedback {
@@ -16,4 +18,16 @@ export interface Feedback {
   content: string;
   date: string;
   response?: string;
+  status?: string;
+}
+
+export interface IdeologyLog {
+  id: string;
+  soldierName: string;
+  soldierUnit: string;
+  status: 'stable' | 'concern' | 'urgent';
+  description: string;
+  familyContext: string;
+  officerNote: string;
+  lastUpdated: string;
 }

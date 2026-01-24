@@ -15,7 +15,6 @@ export interface RegulationSection {
 }
 
 export interface ThemeConfig {
-  // --- GENERAL & BRANDING ---
   primaryColor: string;
   secondaryColor: string;
   unitName: string;
@@ -26,32 +25,21 @@ export interface ThemeConfig {
   logoTextColor2: string;
   gridOpacity: number;
   version: string;
-
-  // --- HEADER & FOOTER ---
   contactPhone: string;
   contactAddress: string;
   footerCopyright: string;
-  
-  // --- HOME PAGE ---
   homeHeroTitle: string;
   homeHeroSubTitle: string;
   homeHeroBg: string;
   homeQuote: string;
   homeQuoteAuthor: string;
-
-  // --- REGULATIONS PAGE ---
   regHeroBg: string;
   regSections: RegulationSection[];
-
-  // --- TRADITIONS PAGE ---
   tradHeroBg: string;
   tradHeroTitle: string;
   tradHeroSub: string;
   milestones: Milestone[];
-
-  // --- SYSTEM ---
   isAutoSyncEnabled: boolean;
-  remoteSyncUrl?: string;
 }
 
 const defaultConfig: ThemeConfig = {
@@ -64,25 +52,21 @@ const defaultConfig: ThemeConfig = {
   logoTextColor1: '#800000',
   logoTextColor2: '#d4af37',
   gridOpacity: 0.15,
-  version: '4.5.0-SYNC',
-  
+  version: '5.0.0-FIREBASE',
   contactPhone: '024.3333.xxxx',
   contactAddress: 'Thị trấn Đô Lương, Đô Lương, Nghệ An',
   footerCopyright: '© 2024 TIỂU ĐOÀN 15 SPG-9 - SƯ ĐOÀN 324',
-
   homeHeroTitle: 'Kỷ cương THÉP - Bản sắc HÙNG',
   homeHeroSubTitle: 'Hệ thống quản lý thông tin và hỗ trợ thân nhân chiến sĩ chính quy, hiện đại và tin cậy.',
   homeHeroBg: 'https://images.unsplash.com/photo-1590247813693-5541d1c609fd?auto=format&fit=crop&q=80&w=2000',
   homeQuote: '"Quân đội ta trung với Đảng, hiếu với dân, sẵn sàng chiến đấu hy sinh vì độc lập tự do của Tổ quốc"',
   homeQuoteAuthor: 'Chủ tịch Hồ Chí Minh',
-
   regHeroBg: 'https://images.unsplash.com/photo-1579913741617-3844a30a213a?auto=format&fit=crop&q=80&w=2000',
   regSections: [
     { title: "Thủ tục vào cổng", items: ["Bắt buộc mang theo CCCD bản gốc", "Đã đăng ký trước 24h", "Trình diện đúng giờ hẹn"] },
     { title: "Tác phong văn hóa", items: ["Trang phục lịch sự", "Không mang chất cấm", "Lời nói đúng mực"] },
     { title: "Thời gian tiếp dân", items: ["Thứ 7 & CN hàng tuần", "Sáng: 07:30 - 11:00", "Chiều: 13:30 - 16:30"] }
   ],
-
   tradHeroBg: 'https://images.unsplash.com/photo-1590247813693-5541d1c609fd?auto=format&fit=crop&q=80&w=2000',
   tradHeroTitle: 'Bản Hùng Ca Bất Tử',
   tradHeroSub: 'Ghi dấu hành trình xây dựng, chiến đấu và trưởng thành của đơn vị Anh hùng LLVTND.',
@@ -110,16 +94,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isSyncing, setIsSyncing] = useState(false);
 
   const fetchRemoteConfig = useCallback(async () => {
-    if (!api.getConfig().baseUrl) return;
     setIsSyncing(true);
     try {
-      const remote = await api.request('settings/global_config');
-      if (remote && remote.unitName) {
-        setConfig(remote);
+      const remote = await api.getThemeConfig();
+      if (remote) {
+        setConfig(prev => ({ ...prev, ...remote }));
         localStorage.setItem('vms_theme_config', JSON.stringify(remote));
       }
     } catch (e) {
-      console.warn("Using local theme config (Remote fetch failed)");
+      console.warn("Firebase fetch failed, using local.");
     } finally {
       setIsSyncing(false);
     }
@@ -127,8 +110,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     fetchRemoteConfig();
-    const interval = setInterval(fetchRemoteConfig, 30000);
-    return () => clearInterval(interval);
   }, [fetchRemoteConfig]);
 
   useEffect(() => {
@@ -155,19 +136,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const saveConfigToCloud = async () => {
-    if (!api.getConfig().baseUrl) {
-      alert("Chưa cấu hình API. Dữ liệu chỉ được lưu tạm thời trên máy này.");
-      return;
-    }
     setIsSyncing(true);
     try {
-      await api.request('settings/global_config', {
-        method: 'PUT',
-        body: JSON.stringify(config)
-      });
-      alert("Đã đồng bộ giao diện lên Cloud thành công!");
+      await api.saveThemeConfig(config);
+      alert("Đã đồng bộ giao diện lên Firebase Cloud thành công!");
     } catch (e) {
-      alert("Lỗi đồng bộ Cloud. Vui lòng kiểm tra API Endpoint.");
+      alert("Lỗi đồng bộ Firebase.");
     } finally {
       setIsSyncing(false);
     }

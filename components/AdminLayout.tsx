@@ -4,7 +4,8 @@ import { Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { 
   Shield, Users, Settings, LayoutDashboard, 
   LogOut, ChevronRight, Bell, User, 
-  Monitor, Database, ShieldCheck, ClipboardCheck
+  Monitor, Database, ShieldCheck, ClipboardCheck,
+  BrainCircuit
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -16,6 +17,7 @@ const AdminSidebar = () => {
   const menuItems = [
     { path: '/admin', label: 'Tổng quan', icon: LayoutDashboard },
     { path: '/admin/registrations', label: 'Quản lý Đăng ký', icon: ClipboardCheck },
+    { path: '/admin/ideology', label: 'Công tác Tư tưởng', icon: BrainCircuit },
     { path: '/admin/users', label: 'Quản lý Nhân sự', icon: Users },
     { path: '/admin/settings', label: 'Tùy biến Giao diện', icon: Settings },
     { path: '/admin/database', label: 'Dữ liệu & Bảo mật', icon: Database },

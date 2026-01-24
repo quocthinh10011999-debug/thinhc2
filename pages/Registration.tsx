@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ShieldCheck, User, Phone, Calendar, Users, MapPin, Clock, FileText, AlertTriangle, ArrowRight } from 'lucide-react';
+import { ShieldCheck, User, Phone, Calendar, Users, MapPin, Clock, FileText, AlertTriangle, ArrowRight, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RegistrationData } from '../types';
 import { api } from '../services/api';
@@ -45,22 +45,20 @@ const Registration = () => {
     setIsSubmitting(true);
     
     try {
-      const id = `15-X${Date.now().toString().slice(-5)}`;
-      const newEntry = {
-        ...formData,
-        id,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      };
-
-      await api.createRegistration(newEntry);
-      await refreshData(); // Đồng bộ lại dữ liệu toàn cục
-
-      setRegId(id);
+      // Ghi trực tiếp vào Firebase Cloud
+      const result = await api.createRegistration(formData);
+      
+      // Cập nhật state UI sau khi ghi thành công
+      setRegId(result.id.slice(-6).toUpperCase());
       setSubmitted(true);
+      
+      // Kích hoạt đồng bộ lại dữ liệu toàn cục
+      await refreshData();
+      
       window.scrollTo(0, 0);
     } catch (error) {
-      alert("Lỗi khi gửi hồ sơ. Vui lòng kiểm tra kết nối mạng.");
+      console.error("Submit error:", error);
+      alert("Hệ thống Cloud gặp sự cố. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false);
     }
@@ -69,18 +67,18 @@ const Registration = () => {
   if (submitted) {
     return (
       <div className="min-h-screen bg-[#fffcf5] flex items-center justify-center px-6 py-20">
-        <div className="max-w-lg w-full bg-white border-4 border-[#800000] p-12 shadow-heavy text-center space-y-10">
+        <div className="max-w-lg w-full bg-white border-4 border-[#800000] p-12 shadow-heavy text-center space-y-10 animate-subtle">
             <div className="w-16 h-16 bg-[#800000] text-[#d4af37] flex items-center justify-center mx-auto shadow-lg">
                 <ShieldCheck className="w-8 h-8" />
             </div>
             <div className="space-y-3">
                 <h2 className="text-2xl font-black text-[#800000] uppercase tracking-tight">Gửi hồ sơ thành công</h2>
                 <p className="text-slate-500 text-[13px] font-medium leading-relaxed">
-                  Hồ sơ đã được gửi lên hệ thống và đang chờ phê duyệt từ trực ban tiểu đoàn.
+                  Hồ sơ đã được lưu trữ an toàn trên hệ thống Cloud và đang chờ phê duyệt.
                 </p>
             </div>
             <div className="py-6 px-4 bg-slate-50 border-l-8 border-[#d4af37]">
-                <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">Mã số phê duyệt</p>
+                <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">Mã số hồ sơ (Cloud ID)</p>
                 <span className="text-3xl font-black text-[#800000] font-mono tracking-wider">{regId}</span>
             </div>
             <div className="pt-4 flex flex-col gap-3">
@@ -94,10 +92,10 @@ const Registration = () => {
   return (
     <div className="min-h-screen bg-[#fffcf5] py-16">
       <div className="max-w-4xl mx-auto px-6">
-        <div className="bg-white border-2 border-[#d4af37] shadow-sm overflow-hidden">
+        <div className="bg-white border-2 border-[#d4af37] shadow-sm overflow-hidden animate-subtle">
             <div className="bg-[#800000] p-10 text-white relative">
                 <h1 className="text-3xl font-black uppercase tracking-tight relative z-10">Tờ khai điện tử</h1>
-                <p className="text-[#d4af37] text-[13px] mt-2 relative z-10 font-bold uppercase tracking-widest opacity-80">Battalion 15 • Digital Gateway</p>
+                <p className="text-[#d4af37] text-[13px] mt-2 relative z-10 font-bold uppercase tracking-widest opacity-80">Battalion 15 • Firebase Cloud Enabled</p>
             </div>
 
             <form onSubmit={handleSubmit} className="p-10 space-y-12">
@@ -130,7 +128,7 @@ const Registration = () => {
                 <div className="bg-amber-50 p-6 border-l-8 border-[#800000] flex items-start space-x-4">
                     <AlertTriangle className="w-5 h-5 text-[#800000] mt-0.5 shrink-0" />
                     <p className="text-[11px] text-[#800000] font-bold leading-relaxed uppercase tracking-wide">
-                        Mọi thông tin sẽ được đối soát thực tế tại cổng gác. Khai báo sai sẽ bị từ chối truy cập.
+                        Thông tin được mã hóa và truyền qua kênh bảo mật Firebase SSL.
                     </p>
                 </div>
 
@@ -140,8 +138,9 @@ const Registration = () => {
                         disabled={isSubmitting}
                         className="bg-[#800000] text-[#d4af37] px-12 py-4 font-bold text-[11px] uppercase tracking-widest hover:bg-black transition-all flex items-center space-x-3 shadow-lg disabled:opacity-50"
                     >
-                        <span>{isSubmitting ? 'ĐANG GỬI...' : 'GỬI HỒ SƠ ĐĂNG KÝ'}</span>
-                        <ArrowRight className="w-4 h-4" />
+                        {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                        <span>{isSubmitting ? 'ĐANG ĐỒNG BỘ...' : 'GỬI HỒ SƠ LÊN CLOUD'}</span>
+                        {!isSubmitting && <ArrowRight className="w-4 h-4" />}
                     </button>
                 </div>
             </form>

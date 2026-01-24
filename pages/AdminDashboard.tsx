@@ -3,7 +3,7 @@ import React from 'react';
 import { 
   Users, Calendar, MessageSquare, ShieldCheck, 
   TrendingUp, Activity, AlertCircle, ArrowUpRight,
-  RefreshCw
+  RefreshCw, Database
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
@@ -32,15 +32,15 @@ const AdminDashboard = () => {
           <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Trung tâm Chỉ huy</h1>
           <p className="text-xs text-slate-500 font-medium flex items-center">
             {isLoading ? (
-              <><RefreshCw className="w-3 h-3 mr-2 animate-spin" /> Đang đồng bộ dữ liệu toàn cầu...</>
+              <><RefreshCw className="w-3 h-3 mr-2 animate-spin" /> Đang đồng bộ PostgreSQL...</>
             ) : (
               <>Lần cuối đồng bộ: {lastSync?.toLocaleTimeString()}</>
             )}
           </p>
         </div>
-        <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${isApiConfigured ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
-          <div className={`w-2 h-2 rounded-full ${isApiConfigured ? 'bg-green-500 animate-pulse' : 'bg-amber-500'}`}></div>
-          <span className="text-[10px] font-black uppercase tracking-widest">{isApiConfigured ? 'Cloud Connected' : 'Local Mode'}</span>
+        <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${isApiConfigured ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
+          <Database className={`w-3 h-3 ${isApiConfigured ? 'animate-pulse' : ''}`} />
+          <span className="text-[10px] font-black uppercase tracking-widest">{isApiConfigured ? 'Postgres Active' : 'SQL Error'}</span>
         </div>
       </div>
 
@@ -93,20 +93,20 @@ const AdminDashboard = () => {
             <h3 className="text-[#d4af37] text-xs font-black uppercase tracking-[0.2em]">Thông tin đồng bộ</h3>
             <div className="space-y-4">
                <div className="flex items-start space-x-3 bg-black/20 p-4 rounded-lg">
-                  <RefreshCw className="w-4 h-4 text-[#d4af37] shrink-0 mt-0.5" />
-                  <p className="text-[11px] leading-relaxed">Dữ liệu được đồng bộ tự động mỗi 10 giây giữa các phiên làm việc.</p>
+                  <Database className="w-4 h-4 text-[#d4af37] shrink-0 mt-0.5" />
+                  <p className="text-[11px] leading-relaxed">Cơ sở dữ liệu: Neon Postgres (AWS SE-1 Pooler). Dữ liệu được mã hóa SSL/TLS.</p>
                </div>
                {!isApiConfigured && (
                  <div className="flex items-start space-x-3 bg-red-950/40 p-4 rounded-lg border border-red-500/30">
                     <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-[10px] leading-relaxed font-bold uppercase text-red-200">
-                      Cảnh báo: Đang chạy ở chế độ Offline. Vui lòng cấu hình API Endpoint trong mục Cài đặt.
+                      Lỗi kết nối SQL. Kiểm tra Network hoặc Connection String.
                     </p>
                  </div>
                )}
             </div>
-            <Link to="/admin/settings" className="block w-full text-center bg-[#d4af37] text-[#800000] py-3 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all">
-              Cấu hình Cloud
+            <Link to="/admin/database" className="block w-full text-center bg-[#d4af37] text-[#800000] py-3 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all">
+              Bảo trì Database
             </Link>
           </div>
         </div>
