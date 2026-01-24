@@ -3,11 +3,17 @@ import { GoogleGenAI } from "@google/genai";
 
 /**
  * Sử dụng Gemini API để tạo phản hồi tự động cho ý kiến đóng góp.
- * Vai trò: Trực ban tiểu đoàn 15.
+ * Key được bảo mật qua biến môi trường VITE_API_KEY.
  */
 export const getAIResponse = async (feedback: string) => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = import.meta.env.VITE_API_KEY || process.env.API_KEY;
+    if (!apiKey) {
+      console.warn("Gemini API Key missing. Returning default response.");
+      return "Trực ban tiểu đoàn đã tiếp nhận ý kiến của quý vị. Xin cảm ơn.";
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',

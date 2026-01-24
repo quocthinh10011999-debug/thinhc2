@@ -1,17 +1,16 @@
 
 import { neon } from '@neondatabase/serverless';
 
-// Kết nối chính xác theo yêu cầu của người dùng
-const DATABASE_URL = 'postgresql://neondb_owner:npg_0gkecK7nTboz@ep-twilight-wildflower-a1yabv5u-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+/**
+ * Đọc Connection String từ biến môi trường.
+ * Lưu ý: Trên Vercel cần thêm biến VITE_DATABASE_URL trong Settings.
+ */
+const DATABASE_URL = import.meta.env.VITE_DATABASE_URL || 'postgresql://neondb_owner:npg_0gkecK7nTboz@ep-twilight-wildflower-a1yabv5u-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
 const sql = neon(DATABASE_URL);
 
 class ApiService {
-  /**
-   * Khởi tạo toàn bộ cấu trúc bảng cần thiết cho hệ thống
-   */
   async ensureSchema() {
     try {
-      // 1. Bảng Tư tưởng
       await sql`
         CREATE TABLE IF NOT EXISTS ideology_logs (
           id SERIAL PRIMARY KEY,
@@ -24,7 +23,6 @@ class ApiService {
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
-      // 2. Bảng Đăng ký thăm
       await sql`
         CREATE TABLE IF NOT EXISTS registrations (
           id SERIAL PRIMARY KEY,
@@ -40,7 +38,6 @@ class ApiService {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
-      // 3. Bảng Phản hồi
       await sql`
         CREATE TABLE IF NOT EXISTS feedbacks (
           id SERIAL PRIMARY KEY,
@@ -52,7 +49,6 @@ class ApiService {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
-      // 4. Bảng Cấu hình giao diện
       await sql`
         CREATE TABLE IF NOT EXISTS theme_settings (
           key TEXT PRIMARY KEY,
@@ -60,7 +56,6 @@ class ApiService {
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
-      // 5. Bảng Tài khoản (Mới)
       await sql`
         CREATE TABLE IF NOT EXISTS users (
           username TEXT PRIMARY KEY,
@@ -70,8 +65,6 @@ class ApiService {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `;
-      
-      // Chèn admin mặc định nếu chưa có
       await sql`
         INSERT INTO users (username, full_name, role, password)
         VALUES ('admin', 'Sĩ quan Trực ban', 'admin', 'admin123')
@@ -82,7 +75,6 @@ class ApiService {
     }
   }
 
-  // --- QUẢN LÝ TÀI KHOẢN (POSTGRES) ---
   async getUsers() {
     return await sql`SELECT username, full_name as "fullName", role FROM users ORDER BY created_at ASC`;
   }
@@ -99,7 +91,6 @@ class ApiService {
     return await sql`DELETE FROM users WHERE username = ${username} AND username != 'admin'`;
   }
 
-  // --- QUẢN LÝ TƯ TƯỞNG ---
   async createIdeologyLog(data: any) {
     const result = await sql`
       INSERT INTO ideology_logs (soldier_name, soldier_unit, status, description, family_context, officer_note)
@@ -120,7 +111,6 @@ class ApiService {
     }));
   }
 
-  // --- QUẢN LÝ ĐĂNG KÝ ---
   async createRegistration(data: any) {
     const result = await sql`
       INSERT INTO registrations (visitor_name, id_number, phone_number, soldier_name, soldier_unit, relationship, visit_date, visit_time)
@@ -151,7 +141,6 @@ class ApiService {
     return await sql`DELETE FROM registrations WHERE id = ${parseInt(id)}`;
   }
 
-  // --- QUẢN LÝ PHẢN HỒI ---
   async createFeedback(data: any) {
     return await sql`
       INSERT INTO feedbacks (author, content, date, response, status)
@@ -164,7 +153,6 @@ class ApiService {
     return rows.map(r => ({ ...r, id: r.id.toString() }));
   }
 
-  // --- CẤU HÌNH GIAO DIỆN ---
   async getThemeConfig() {
     const rows = await sql`SELECT config FROM theme_settings WHERE key = 'global'`;
     return rows.length > 0 ? rows[0].config : null;
