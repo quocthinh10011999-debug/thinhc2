@@ -17,31 +17,34 @@ import AdminIdeology from './pages/AdminIdeology';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { DataProvider } from './context/DataContext';
+import { MusicProvider } from './context/MusicContext';
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
       <ThemeProvider>
         <DataProvider>
-          <Router>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Layout><Home /></Layout>} />
-              <Route path="/quy-dinh" element={<Layout><Regulations /></Layout>} />
-              <Route path="/truyen-thong" element={<Layout><Traditions /></Layout>} />
-              <Route path="/dang-ky" element={<Layout><Registration /></Layout>} />
-              <Route path="/gop-y" element={<Layout><FeedbackPage /></Layout>} />
-              <Route path="/login" element={<Login />} />
+          <MusicProvider>
+            <Router>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Layout><Home /></Layout>} />
+                <Route path="/quy-dinh" element={<Layout><Regulations /></Layout>} />
+                <Route path="/truyen-thong" element={<Layout><Traditions /></Layout>} />
+                <Route path="/dang-ky" element={<Layout><Registration /></Layout>} />
+                <Route path="/gop-y" element={<Layout><FeedbackPage /></Layout>} />
+                <Route path="/login" element={<Login />} />
 
-              {/* Admin Routes with Separate Layout */}
-              <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
-              <Route path="/admin/registrations" element={<AdminLayout><AdminRegistrations /></AdminLayout>} />
-              <Route path="/admin/ideology" element={<AdminLayout><AdminIdeology /></AdminLayout>} />
-              <Route path="/admin/users" element={<AdminLayout><AccountManagement /></AdminLayout>} />
-              <Route path="/admin/settings" element={<AdminLayout><SystemSettings /></AdminLayout>} />
-              <Route path="/admin/database" element={<AdminLayout><div className="p-8 text-center text-slate-400 font-bold uppercase text-xs tracking-widest">Tính năng đang phát triển: Quản lý Sao lưu Database</div></AdminLayout>} />
-            </Routes>
-          </Router>
+                {/* Admin Routes with Separate Layout */}
+                <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+                <Route path="/admin/registrations" element={<AdminLayout><AdminRegistrations /></AdminLayout>} />
+                <Route path="/admin/ideology" element={<AdminLayout><AdminIdeology /></AdminLayout>} />
+                <Route path="/admin/users" element={<AdminLayout><AccountManagement /></AdminLayout>} />
+                <Route path="/admin/settings" element={<AdminLayout><SystemSettings /></AdminLayout>} />
+                <Route path="/admin/database" element={<AdminLayout><div className="p-8 text-center text-slate-400 font-bold uppercase text-xs tracking-widest">Tính năng đang phát triển: Quản lý Sao lưu Database</div></AdminLayout>} />
+              </Routes>
+            </Router>
+          </MusicProvider>
         </DataProvider>
       </ThemeProvider>
     </AuthProvider>

@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Target, ShieldAlert, MessageSquare, Star, History, ArrowRight, ChevronRight, UserPlus } from 'lucide-react';
+import { Target, ShieldAlert, MessageSquare, Star, History, ArrowRight, ChevronRight, UserPlus, Volume2, VolumeX, Music as MusicIcon } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useMusic } from '../context/MusicContext';
 
 const ServiceCard = ({ icon: Icon, title, desc, path, bgColor, iconColor }: any) => (
   <Link to={path} className={`group ${bgColor} p-8 aspect-square rounded-[2.5rem] flex flex-col items-center justify-center text-center transition-all duration-300 shadow-lg hover:shadow-2xl hover:-translate-y-2 border-4 border-white/20`}>
@@ -19,6 +20,7 @@ const ServiceCard = ({ icon: Icon, title, desc, path, bgColor, iconColor }: any)
 
 const Home = () => {
   const { config } = useTheme();
+  const { isPlaying, togglePlay, activeTrack } = useMusic();
 
   return (
     <div className="space-y-0">
@@ -28,8 +30,26 @@ const Home = () => {
         <div className="absolute inset-0 mil-grid-bg" style={{ opacity: 0.15 }}></div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-left flex flex-col items-start space-y-8">
-          <div className="inline-flex items-center space-x-3 bg-white/10 border-l-4 border-[#d4af37] px-6 py-2 backdrop-blur-md">
-             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#d4af37]">{config.unitName} • {config.slogan}</span>
+          <div className="flex flex-col md:flex-row md:items-center gap-4 w-full justify-between">
+            <div className="inline-flex items-center space-x-3 bg-white/10 border-l-4 border-[#d4af37] px-6 py-2 backdrop-blur-md">
+               <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#d4af37]">{config.unitName} • {config.slogan}</span>
+            </div>
+            
+            {/* Nút điều khiển nhạc tại trang chủ */}
+            {activeTrack && (
+              <button 
+                onClick={togglePlay}
+                className="flex items-center space-x-3 bg-white/10 hover:bg-white/20 border border-white/30 px-5 py-2.5 rounded-full backdrop-blur-md transition-all group"
+              >
+                <div className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${isPlaying ? 'bg-[#d4af37] text-[#800000]' : 'bg-white/20 text-white'}`}>
+                  {isPlaying ? <Volume2 className="w-4 h-4 animate-pulse" /> : <VolumeX className="w-4 h-4" />}
+                </div>
+                <div className="text-left overflow-hidden">
+                   <p className="text-[8px] font-black text-[#d4af37] uppercase tracking-widest leading-none mb-1">Âm nhạc đơn vị</p>
+                   <p className="text-[10px] font-bold text-white uppercase truncate max-w-[120px]">{isPlaying ? 'Đang phát...' : 'Đã tắt'}</p>
+                </div>
+              </button>
+            )}
           </div>
           
           <div className="space-y-2">

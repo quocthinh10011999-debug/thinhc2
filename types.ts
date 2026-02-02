@@ -31,3 +31,10 @@ export interface IdeologyLog {
   officerNote: string;
   lastUpdated: string;
 }
+
+export interface MusicTrack {
+  id: string;
+  title: string;
+  url: string;
+  isActive: boolean;
+}

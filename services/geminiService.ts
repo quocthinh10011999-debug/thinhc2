@@ -3,17 +3,13 @@ import { GoogleGenAI } from "@google/genai";
 
 /**
  * Sử dụng Gemini API để tạo phản hồi tự động cho ý kiến đóng góp.
- * Key được bảo mật qua biến môi trường VITE_API_KEY.
+ * Key được bảo mật qua biến môi trường process.env.API_KEY.
  */
 export const getAIResponse = async (feedback: string) => {
   try {
-    const apiKey = import.meta.env.VITE_API_KEY || process.env.API_KEY;
-    if (!apiKey) {
-      console.warn("Gemini API Key missing. Returning default response.");
-      return "Trực ban tiểu đoàn đã tiếp nhận ý kiến của quý vị. Xin cảm ơn.";
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
+    // Initialize GoogleGenAI with process.env.API_KEY directly as per SDK guidelines.
+    // The key is assumed to be pre-configured and accessible.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -23,6 +19,7 @@ export const getAIResponse = async (feedback: string) => {
       }
     });
     
+    // Access response.text property directly as per @google/genai documentation.
     return response.text || "Trực ban tiểu đoàn đã tiếp nhận ý kiến của quý vị. Xin cảm ơn.";
   } catch (error) {
     console.error("Gemini API Error:", error);

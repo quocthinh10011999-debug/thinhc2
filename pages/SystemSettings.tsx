@@ -5,9 +5,12 @@ import {
   Image as ImageIcon, Type, FileText, History, 
   Save, RefreshCw, Plus, Trash2, Globe, Upload,
   Pipette, ListPlus, GripVertical, Link as LinkIcon,
-  Eye
+  Eye, Music, Play, Pause, Trash, CheckCircle,
+  HelpCircle, AlertCircle, ExternalLink, Youtube,
+  Info, MousePointer2, Copy, Download, FileAudio, FileUp
 } from 'lucide-react';
 import { useTheme, RegulationSection, Milestone } from '../context/ThemeContext';
+import { useMusic } from '../context/MusicContext';
 
 const SettingInput = ({ label, name, value, onChange, type = "text", placeholder = "" }: any) => (
   <div className="space-y-2">
@@ -47,7 +50,6 @@ const ColorInput = ({ label, name, value, onChange }: any) => (
   </div>
 );
 
-// --- COMPONENT CHỌN ẢNH THÔNG MINH (URL & FILE) ---
 const TacticalImageUpload = ({ label, value, onImageChange }: { label: string, value: string, onImageChange: (val: string) => void }) => {
   const [mode, setMode] = useState<'link' | 'file'>(value?.startsWith('data:image') ? 'file' : 'link');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -133,11 +135,50 @@ const TacticalImageUpload = ({ label, value, onImageChange }: { label: string, v
 
 const SystemSettings = () => {
   const { config, updateConfig, saveConfigToCloud, isSyncing } = useTheme();
+  const { tracks, updateActiveTrack, removeTrack, addTrack, activeTrack } = useMusic();
   const [activeTab, setActiveTab] = useState('home');
+
+  // State quản lý form thêm nhạc
+  const [newMusic, setNewMusic] = useState({ title: '', url: '', fileName: '' });
+  const [isMusicProcessing, setIsMusicProcessing] = useState(false);
+  const musicFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     updateConfig({ [name]: value });
+  };
+
+  const handleMusicFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 15 * 1024 * 1024) { // Giới hạn 15MB cho Database
+        alert("Dung lượng file quá lớn (Tối đa 15MB). Vui lòng chọn file nhẹ hơn.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadstart = () => setIsMusicProcessing(true);
+      reader.onloadend = () => {
+        setNewMusic({ 
+          ...newMusic, 
+          url: reader.result as string,
+          fileName: file.name
+        });
+        setIsMusicProcessing(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddMusic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMusic.title || !newMusic.url) return;
+    setIsMusicProcessing(true);
+    try {
+      await addTrack(newMusic.title, newMusic.url);
+      setNewMusic({ title: '', url: '', fileName: '' });
+    } finally {
+      setIsMusicProcessing(false);
+    }
   };
 
   const updateMilestone = (index: number, field: keyof Milestone, value: string) => {
@@ -193,7 +234,7 @@ const SystemSettings = () => {
       <div className="flex justify-between items-center border-b border-slate-200 pb-6">
         <div>
           <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Cấu hình Giao diện & Nội dung</h1>
-          <p className="text-xs text-slate-500 font-medium">Chỉnh sửa website linh hoạt: Hỗ trợ dán link URL hoặc Tải ảnh trực tiếp từ máy tính.</p>
+          <p className="text-xs text-slate-500 font-medium">Chỉnh sửa website linh hoạt: Hỗ trợ Tải ảnh/nhạc trực tiếp vào Database.</p>
         </div>
         <button 
           onClick={saveConfigToCloud}
@@ -210,6 +251,7 @@ const SystemSettings = () => {
           { id: 'home', label: 'Trang chủ', icon: Layout },
           { id: 'reg', label: 'Quy định', icon: FileText },
           { id: 'trad', label: 'Truyền thống', icon: History },
+          { id: 'music', label: 'Nhạc nền', icon: Music },
           { id: 'general', label: 'Cấu hình chung', icon: Globe },
         ].map(tab => (
           <button 
@@ -344,6 +386,128 @@ const SystemSettings = () => {
             </div>
           )}
 
+          {activeTab === 'music' && (
+            <div className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm space-y-8">
+               <div className="flex justify-between items-center">
+                  <h3 className="text-[11px] font-black text-[#800000] uppercase tracking-[0.3em] flex items-center">
+                    <Music className="w-4 h-4 mr-3" /> Thư viện Nhạc nền (Tải tệp MP3)
+                  </h3>
+                  <div className="flex items-center text-green-600 text-[10px] font-bold uppercase">
+                    <Shield className="w-3.5 h-3.5 mr-1" /> Khuyên dùng file MP3 vật lý
+                  </div>
+               </div>
+               
+               {/* Form thêm nhạc bằng file */}
+               <div className="bg-slate-50 p-10 border-4 border-dashed border-slate-200 rounded-[2rem] text-center space-y-6">
+                  {!newMusic.url ? (
+                    <div className="space-y-4">
+                      <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm text-[#800000]">
+                        <FileUp className="w-10 h-10" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-slate-900 uppercase">Chọn file nhạc từ máy tính</h4>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Định dạng hỗ trợ: .mp3, .ogg, .wav (Tối đa 15MB)</p>
+                      </div>
+                      <button 
+                        onClick={() => musicFileInputRef.current?.click()}
+                        className="bg-[#800000] text-[#d4af37] px-8 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all rounded-full shadow-lg"
+                      >
+                        Chọn tệp MP3
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6 animate-subtle">
+                      <div className="flex items-center justify-center space-x-4 p-4 bg-white border-2 border-green-500 rounded-2xl max-w-md mx-auto">
+                        <FileAudio className="w-8 h-8 text-green-500" />
+                        <div className="text-left overflow-hidden">
+                           <p className="text-[10px] font-black text-slate-900 uppercase truncate">{newMusic.fileName}</p>
+                           <p className="text-[8px] font-bold text-green-600 uppercase tracking-widest">Đã sẵn sàng để nạp vào SQL</p>
+                        </div>
+                        <button onClick={() => setNewMusic({title: '', url: '', fileName: ''})} className="p-2 text-slate-300 hover:text-red-500">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      
+                      <form onSubmit={handleAddMusic} className="max-w-md mx-auto space-y-4">
+                        <SettingInput 
+                          label="Đặt tên hiển thị cho bài hát" 
+                          value={newMusic.title} 
+                          onChange={(e: any) => setNewMusic({...newMusic, title: e.target.value})} 
+                          placeholder="Ví dụ: Tiến bước dưới quân kỳ (2024)"
+                        />
+                        <button 
+                          type="submit"
+                          disabled={isMusicProcessing || !newMusic.title}
+                          className="w-full bg-green-600 text-white py-4 text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl disabled:opacity-50"
+                        >
+                          {isMusicProcessing ? 'ĐANG ĐỒNG BỘ SQL...' : 'NẠP VÀO THƯ VIỆN ĐƠN VỊ'}
+                        </button>
+                      </form>
+                    </div>
+                  )}
+                  <input 
+                    type="file" 
+                    ref={musicFileInputRef} 
+                    onChange={handleMusicFileChange} 
+                    className="hidden" 
+                    accept="audio/*" 
+                  />
+               </div>
+
+               {/* Danh sách nhạc */}
+               <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Thư viện âm thanh đã nạp ({tracks.length})</label>
+                    <span className="text-[9px] font-black text-slate-300 uppercase">Database: Neon PostgreSQL</span>
+                  </div>
+                  
+                  {tracks.length > 0 ? tracks.map((track) => (
+                    <div key={track.id} className={`flex items-center justify-between p-4 border-2 transition-all rounded-xl ${track.isActive ? 'bg-red-50 border-[#800000] shadow-md' : 'bg-white border-slate-100 hover:border-slate-300'}`}>
+                       <div className="flex items-center space-x-4">
+                          <div className={`p-3 rounded-lg ${track.isActive ? 'bg-[#800000] text-[#d4af37]' : 'bg-slate-100 text-slate-400'}`}>
+                             {track.isActive ? <Play className="w-4 h-4 animate-pulse" /> : <Music className="w-4 h-4" />}
+                          </div>
+                          <div className="max-w-[200px] md:max-w-md">
+                             <p className="text-xs font-black text-slate-900 uppercase truncate">{track.title}</p>
+                             <div className="flex items-center space-x-2 mt-1">
+                               <span className="px-2 py-0.5 bg-slate-100 text-[8px] font-black text-slate-400 uppercase rounded">Local File</span>
+                               <p className="text-[9px] text-slate-400 font-mono italic truncate max-w-[150px]">ID: {track.id}</p>
+                             </div>
+                          </div>
+                       </div>
+                       <div className="flex items-center space-x-2">
+                          {!track.isActive && (
+                            <button 
+                              onClick={() => updateActiveTrack(track.id)}
+                              className="px-5 py-2.5 text-[9px] font-black uppercase text-green-600 border-2 border-green-100 hover:bg-green-600 hover:text-white transition-all rounded-lg"
+                            >
+                              Kích hoạt
+                            </button>
+                          )}
+                          {track.isActive && (
+                            <div className="flex items-center space-x-2 px-5 py-2.5 text-[9px] font-black uppercase text-[#800000] bg-white rounded-lg border-2 border-[#800000]/20">
+                               <CheckCircle className="w-3 h-3" />
+                               <span>Đang phát</span>
+                            </div>
+                          )}
+                          <button 
+                            onClick={() => removeTrack(track.id)}
+                            className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </button>
+                       </div>
+                    </div>
+                  )) : (
+                    <div className="text-center py-20 bg-slate-50 border-4 border-dashed border-slate-100 rounded-3xl">
+                       <Music className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                       <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Chưa có tệp nhạc nào được nạp</p>
+                    </div>
+                  )}
+               </div>
+            </div>
+          )}
+
           {activeTab === 'general' && (
             <div className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm space-y-12">
               <div className="space-y-8">
@@ -426,8 +590,7 @@ const SystemSettings = () => {
                <Pipette className="w-10 h-10 text-[#d4af37] mb-6" />
                <h4 className="text-[11px] font-black uppercase tracking-widest text-[#d4af37] mb-4">Ghi chú thiết kế</h4>
                <p className="text-[10px] leading-relaxed text-white/70 italic">
-                 Hệ thống hiện hỗ trợ cả tải ảnh trực tiếp (Base64) hoặc dán link URL. 
-                 Màu sắc chữ logo và nền sẽ được cập nhật ngay lập tức sau khi lưu dữ liệu.
+                 Hệ thống hiện đã ưu tiên việc nạp dữ liệu vật lý (Base64) trực tiếp vào SQL để nhạc không bị lỗi "Không hỗ trợ định dạng".
                </p>
                <div className="mt-8 pt-8 border-t border-white/10 space-y-4">
                   <div className="flex justify-between items-center text-[9px] font-mono text-white/40">
@@ -439,6 +602,14 @@ const SystemSettings = () => {
                     <span>{config.version}</span>
                   </div>
                </div>
+            </div>
+
+            <div className="bg-white border-2 border-slate-100 p-8 rounded-xl shadow-sm">
+               <Music className="w-8 h-8 text-[#800000] mb-4" />
+               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Ưu điểm File MP3</h4>
+               <p className="text-[9px] leading-relaxed text-slate-500 font-medium">
+                 Việc nạp file MP3 trực tiếp giúp trình duyệt giải mã âm thanh nhanh hơn, không bị quảng cáo hay giới hạn từ YouTube, và đặc biệt là hoạt động được cả khi mạng yếu.
+               </p>
             </div>
         </div>
       </div>

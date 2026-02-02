@@ -6,10 +6,39 @@ import {
   MessageSquare, LogOut, Settings, LogIn, 
   Search, Calendar, Phone, Globe, Facebook, 
   Youtube, ChevronRight, Menu, X, RefreshCw,
-  LayoutDashboard
+  LayoutDashboard, Volume2, VolumeX, Music
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useMusic } from '../context/MusicContext';
+
+const FloatingMusicPlayer = () => {
+  const { isPlaying, togglePlay, activeTrack } = useMusic();
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  if (!activeTrack) return null;
+
+  return (
+    <div className="fixed bottom-8 right-8 z-[60] flex items-center group">
+      <div className={`mr-4 bg-white/90 backdrop-blur-md border-2 border-[#800000] px-4 py-2 shadow-xl transition-all duration-500 overflow-hidden whitespace-nowrap ${showTooltip ? 'max-w-xs opacity-100' : 'max-w-0 opacity-0'}`}>
+        <p className="text-[9px] font-black text-[#800000] uppercase tracking-widest flex items-center">
+           <Music className="w-3 h-3 mr-2 animate-bounce" /> {activeTrack.title}
+        </p>
+      </div>
+      <button 
+        onClick={togglePlay}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+        className={`w-14 h-14 flex items-center justify-center rounded-full shadow-2xl transition-all duration-300 border-4 border-white ${isPlaying ? 'bg-[#800000] text-[#d4af37] rotate-[360deg]' : 'bg-slate-200 text-slate-400 hover:bg-[#800000] hover:text-[#d4af37]'}`}
+      >
+        {isPlaying ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+        {isPlaying && (
+          <div className="absolute inset-0 rounded-full border-4 border-[#d4af37] animate-ping opacity-20"></div>
+        )}
+      </button>
+    </div>
+  );
+};
 
 const TopBar = () => {
   const { config } = useTheme();
@@ -228,6 +257,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <HeaderMain />
       <Navbar />
       <main className="flex-grow animate-subtle">{children}</main>
+      <FloatingMusicPlayer />
       <Footer />
     </div>
   );
