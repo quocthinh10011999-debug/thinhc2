@@ -17,8 +17,8 @@ const MilestoneItem = ({ year, title, desc, img, index }: any) => {
         <p className="text-slate-600 text-base font-semibold leading-relaxed italic border-l-8 border-[#800000] pl-8">{desc}</p>
       </div>
       <div className="w-full lg:w-1/2">
-        <div className="relative aspect-video overflow-hidden border-8 border-white shadow-heavy group">
-            <img src={img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" alt={title} />
+        <div className="relative aspect-video overflow-hidden border-8 border-white shadow-heavy">
+            <img src={img} className="w-full h-full object-cover" alt={title} />
         </div>
       </div>
     </div>
