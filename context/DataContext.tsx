@@ -14,6 +14,8 @@ interface DataContextType {
   addIdeologyLog: (data: any) => Promise<void>;
   updateIdeologyLog: (id: string, data: any) => Promise<void>;
   deleteIdeologyLog: (id: string) => Promise<void>;
+  updateFeedback: (id: string, data: any) => Promise<void>;
+  deleteFeedback: (id: string) => Promise<void>;
   isApiConfigured: boolean;
 }
 
@@ -29,7 +31,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Đảm bảo schema đã tồn tại trong Neon
       await api.ensureSchema();
       
       const [regs, feeds, logs] = await Promise.all([
@@ -84,6 +85,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateFeedback = async (id: string, data: any) => {
+    try {
+      await api.updateFeedback(id, data);
+      await refreshData();
+    } catch (error) {
+      console.error("Failed to update feedback:", error);
+    }
+  };
+
+  const deleteFeedback = async (id: string) => {
+    try {
+      await api.deleteFeedback(id);
+      await refreshData();
+    } catch (error) {
+      console.error("Failed to delete feedback:", error);
+    }
+  };
+
   useEffect(() => {
     refreshData();
     const interval = setInterval(refreshData, 30000); 
@@ -102,6 +121,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addIdeologyLog,
       updateIdeologyLog,
       deleteIdeologyLog,
+      updateFeedback,
+      deleteFeedback,
       isApiConfigured: true
     }}>
       {children}

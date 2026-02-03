@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Users, Calendar, MessageSquare, ShieldCheck, 
   TrendingUp, Activity, AlertCircle, ArrowUpRight,
-  RefreshCw, Database
+  RefreshCw, Database, Download, FileJson, FileCode
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
@@ -21,7 +21,41 @@ const StatCard = ({ label, value, icon: Icon, color }: any) => (
 );
 
 const AdminDashboard = () => {
-  const { registrations, feedbacks, lastSync, isLoading, isApiConfigured } = useData();
+  const { registrations, feedbacks, ideologyLogs, lastSync, isLoading, isApiConfigured } = useData();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const exportSQL = () => {
+    setIsExporting(true);
+    try {
+      let sqlContent = `-- HỆ THỐNG VMS - DỮ LIỆU ĐỒNG BỘ ĐƠN VỊ\n`;
+      sqlContent += `-- Ngày xuất: ${new Date().toLocaleString('vi-VN')}\n\n`;
+
+      // 1. Export Ideology Logs
+      sqlContent += `-- Bảng: ideology_logs (Công tác tư tưởng)\n`;
+      sqlContent += `CREATE TABLE IF NOT EXISTS ideology_logs (id SERIAL PRIMARY KEY, soldier_name TEXT, rank TEXT, position TEXT, hometown TEXT, squad TEXT, platoon TEXT, soldier_unit TEXT, status TEXT, description TEXT, family_context TEXT, officer_note TEXT, updated_at TIMESTAMP);\n`;
+      
+      ideologyLogs.forEach(log => {
+        sqlContent += `INSERT INTO ideology_logs (soldier_name, rank, position, hometown, squad, platoon, soldier_unit, status, description, family_context, officer_note) VALUES ('${log.soldierName}', '${log.rank}', '${log.position}', '${log.hometown}', '${log.squad}', '${log.platoon}', '${log.soldierUnit}', '${log.status}', '${log.description?.replace(/'/g, "''")}', '${log.familyContext?.replace(/'/g, "''")}', '${log.officerNote?.replace(/'/g, "''")}');\n`;
+      });
+
+      sqlContent += `\n-- Bảng: registrations (Đăng ký thăm)\n`;
+      registrations.forEach(reg => {
+        sqlContent += `INSERT INTO registrations (visitor_name, id_number, phone_number, soldier_name, soldier_unit, relationship, visit_date, visit_time, status) VALUES ('${reg.visitorName}', '${reg.idNumber}', '${reg.phoneNumber}', '${reg.soldierName}', '${reg.soldierUnit}', '${reg.relationship}', '${reg.visitDate}', '${reg.visitTime}', '${reg.status}');\n`;
+      });
+
+      const blob = new Blob([sqlContent], { type: 'text/sql' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `VMS_Export_Backup_${new Date().toISOString().split('T')[0]}.sql`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const recentRegs = registrations.slice(0, 3);
 
@@ -38,17 +72,26 @@ const AdminDashboard = () => {
             )}
           </p>
         </div>
-        <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${isApiConfigured ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
-          <Database className={`w-3 h-3 ${isApiConfigured ? 'animate-pulse' : ''}`} />
-          <span className="text-[10px] font-black uppercase tracking-widest">{isApiConfigured ? 'Postgres Active' : 'SQL Error'}</span>
+        <div className="flex space-x-3">
+          <button 
+            onClick={exportSQL}
+            className="flex items-center space-x-2 px-4 py-2 bg-white border border-slate-200 text-[10px] font-black uppercase text-slate-600 hover:bg-slate-50 rounded-lg transition-all shadow-sm"
+          >
+            <FileCode className="w-3.5 h-3.5" />
+            <span>Xuất file .SQL</span>
+          </button>
+          <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${isApiConfigured ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
+            <Database className={`w-3 h-3 ${isApiConfigured ? 'animate-pulse' : ''}`} />
+            <span className="text-[10px] font-black uppercase tracking-widest">{isApiConfigured ? 'Postgres Active' : 'SQL Error'}</span>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard label="Tổng lượt đăng ký" value={registrations.length} icon={Calendar} color="bg-[#800000]" />
         <StatCard label="Ý kiến đóng góp" value={feedbacks.length} icon={MessageSquare} color="bg-[#d4af37]" />
-        <StatCard label="Nhân sự vận hành" value="-" icon={Users} color="bg-green-500" />
-        <StatCard label="Lượt truy cập" value="-" icon={Activity} color="bg-blue-500" />
+        <StatCard label="Hồ sơ quân nhân" value={ideologyLogs.length} icon={Users} color="bg-green-500" />
+        <StatCard label="Đơn vị quản lý" value="4" icon={Activity} color="bg-blue-500" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -90,24 +133,20 @@ const AdminDashboard = () => {
             <ShieldCheck className="w-32 h-32" />
           </div>
           <div className="relative z-10 space-y-6">
-            <h3 className="text-[#d4af37] text-xs font-black uppercase tracking-[0.2em]">Thông tin đồng bộ</h3>
+            <h3 className="text-[#d4af37] text-xs font-black uppercase tracking-[0.2em]">Quản trị Dữ liệu</h3>
             <div className="space-y-4">
                <div className="flex items-start space-x-3 bg-black/20 p-4 rounded-lg">
                   <Database className="w-4 h-4 text-[#d4af37] shrink-0 mt-0.5" />
-                  <p className="text-[11px] leading-relaxed">Cơ sở dữ liệu: Neon Postgres (AWS SE-1 Pooler). Dữ liệu được mã hóa SSL/TLS.</p>
+                  <p className="text-[11px] leading-relaxed">Sử dụng tệp .SQL để import vào MySQL hoặc PostgreSQL để sửa dữ liệu hàng loạt.</p>
                </div>
-               {!isApiConfigured && (
-                 <div className="flex items-start space-x-3 bg-red-950/40 p-4 rounded-lg border border-red-500/30">
-                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-[10px] leading-relaxed font-bold uppercase text-red-200">
-                      Lỗi kết nối SQL. Kiểm tra Network hoặc Connection String.
-                    </p>
-                 </div>
-               )}
+               <button 
+                  onClick={exportSQL}
+                  className="w-full flex items-center justify-center space-x-2 bg-[#d4af37] text-[#800000] py-3 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all rounded"
+               >
+                  <Download className="w-4 h-4" />
+                  <span>Tải Backup SQL</span>
+               </button>
             </div>
-            <Link to="/admin/database" className="block w-full text-center bg-[#d4af37] text-[#800000] py-3 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all">
-              Bảo trì Database
-            </Link>
           </div>
         </div>
       </div>

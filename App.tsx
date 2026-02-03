@@ -14,6 +14,7 @@ import SystemSettings from './pages/SystemSettings';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminRegistrations from './pages/AdminRegistrations';
 import AdminIdeology from './pages/AdminIdeology';
+import AdminFeedback from './pages/AdminFeedback';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { DataProvider } from './context/DataContext';
@@ -39,6 +40,7 @@ const App: React.FC = () => {
                 <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
                 <Route path="/admin/registrations" element={<AdminLayout><AdminRegistrations /></AdminLayout>} />
                 <Route path="/admin/ideology" element={<AdminLayout><AdminIdeology /></AdminLayout>} />
+                <Route path="/admin/feedback" element={<AdminLayout><AdminFeedback /></AdminLayout>} />
                 <Route path="/admin/users" element={<AdminLayout><AccountManagement /></AdminLayout>} />
                 <Route path="/admin/settings" element={<AdminLayout><SystemSettings /></AdminLayout>} />
                 <Route path="/admin/database" element={<AdminLayout><div className="p-8 text-center text-slate-400 font-bold uppercase text-xs tracking-widest">Tính năng đang phát triển: Quản lý Sao lưu Database</div></AdminLayout>} />

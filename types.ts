@@ -24,7 +24,12 @@ export interface Feedback {
 export interface IdeologyLog {
   id: string;
   soldierName: string;
-  soldierUnit: string;
+  rank: string;
+  position: string;
+  hometown: string; // Quê quán
+  squad: string;
+  platoon: string;
+  soldierUnit: string; // Đại đội
   status: 'tốt' | 'khá' | 'trung bình' | 'stable' | 'concern' | 'urgent';
   description: string;
   familyContext: string;
