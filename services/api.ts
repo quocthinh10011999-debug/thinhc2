@@ -176,6 +176,26 @@ class ApiService {
     return result[0];
   }
 
+  async updateIdeologyLog(id: string, data: any) {
+    await this.ensureSchema();
+    return await sql`
+      UPDATE ideology_logs 
+      SET soldier_name = ${data.soldierName}, 
+          soldier_unit = ${data.soldierUnit}, 
+          status = ${data.status}, 
+          description = ${data.description}, 
+          family_context = ${data.familyContext}, 
+          officer_note = ${data.officerNote},
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${parseInt(id)}
+    `;
+  }
+
+  async deleteIdeologyLog(id: string) {
+    await this.ensureSchema();
+    return await sql`DELETE FROM ideology_logs WHERE id = ${parseInt(id)}`;
+  }
+
   async getIdeologyLogs() {
     await this.ensureSchema();
     const rows = await sql`SELECT *, updated_at as "lastUpdated" FROM ideology_logs ORDER BY updated_at DESC`;

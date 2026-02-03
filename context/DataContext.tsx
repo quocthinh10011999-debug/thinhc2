@@ -12,6 +12,8 @@ interface DataContextType {
   refreshData: () => Promise<void>;
   updateRegStatus: (id: string, status: string) => Promise<void>;
   addIdeologyLog: (data: any) => Promise<void>;
+  updateIdeologyLog: (id: string, data: any) => Promise<void>;
+  deleteIdeologyLog: (id: string) => Promise<void>;
   isApiConfigured: boolean;
 }
 
@@ -64,6 +66,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateIdeologyLog = async (id: string, data: any) => {
+    try {
+      await api.updateIdeologyLog(id, data);
+      await refreshData();
+    } catch (error) {
+      console.error("Failed to update ideology log:", error);
+    }
+  };
+
+  const deleteIdeologyLog = async (id: string) => {
+    try {
+      await api.deleteIdeologyLog(id);
+      await refreshData();
+    } catch (error) {
+      console.error("Failed to delete ideology log:", error);
+    }
+  };
+
   useEffect(() => {
     refreshData();
     const interval = setInterval(refreshData, 30000); 
@@ -80,6 +100,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       refreshData, 
       updateRegStatus,
       addIdeologyLog,
+      updateIdeologyLog,
+      deleteIdeologyLog,
       isApiConfigured: true
     }}>
       {children}

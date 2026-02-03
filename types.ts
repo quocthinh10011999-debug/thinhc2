@@ -25,7 +25,7 @@ export interface IdeologyLog {
   id: string;
   soldierName: string;
   soldierUnit: string;
-  status: 'stable' | 'concern' | 'urgent';
+  status: 'tốt' | 'khá' | 'trung bình' | 'stable' | 'concern' | 'urgent';
   description: string;
   familyContext: string;
   officerNote: string;
