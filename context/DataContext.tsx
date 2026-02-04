@@ -1,21 +1,19 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
-import { IdeologyLog } from '../types';
+import { IdeologyLog, QuizSet, QuizScore } from '../types';
 
 interface DataContextType {
   registrations: any[];
   feedbacks: any[];
   ideologyLogs: IdeologyLog[];
+  quizSets: QuizSet[];
+  quizScores: QuizScore[];
   isLoading: boolean;
   lastSync: Date | null;
   refreshData: () => Promise<void>;
   updateRegStatus: (id: string, status: string) => Promise<void>;
   addIdeologyLog: (data: any) => Promise<void>;
-  updateIdeologyLog: (id: string, data: any) => Promise<void>;
-  deleteIdeologyLog: (id: string) => Promise<void>;
-  updateFeedback: (id: string, data: any) => Promise<void>;
-  deleteFeedback: (id: string) => Promise<void>;
   isApiConfigured: boolean;
 }
 
@@ -25,6 +23,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [ideologyLogs, setIdeologyLogs] = useState<IdeologyLog[]>([]);
+  const [quizSets, setQuizSets] = useState<QuizSet[]>([]);
+  const [quizScores, setQuizScores] = useState<QuizScore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastSync, setLastSync] = useState<Date | null>(null);
 
@@ -33,14 +33,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await api.ensureSchema();
       
-      const [regs, feeds, logs] = await Promise.all([
+      const [regs, feeds, logs, sets, scores] = await Promise.all([
         api.getRegistrations(),
         api.getFeedbacks(),
-        api.getIdeologyLogs()
+        api.getIdeologyLogs(),
+        api.getQuizSets(),
+        api.getScores()
       ]);
       setRegistrations(regs);
       setFeedbacks(feeds);
       setIdeologyLogs(logs as any);
+      setQuizSets(sets as any);
+      setQuizScores(scores as any);
       setLastSync(new Date());
     } catch (error) {
       console.error("[POSTGRES] Sync error:", error);
@@ -67,45 +71,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateIdeologyLog = async (id: string, data: any) => {
-    try {
-      await api.updateIdeologyLog(id, data);
-      await refreshData();
-    } catch (error) {
-      console.error("Failed to update ideology log:", error);
-    }
-  };
-
-  const deleteIdeologyLog = async (id: string) => {
-    try {
-      await api.deleteIdeologyLog(id);
-      await refreshData();
-    } catch (error) {
-      console.error("Failed to delete ideology log:", error);
-    }
-  };
-
-  const updateFeedback = async (id: string, data: any) => {
-    try {
-      await api.updateFeedback(id, data);
-      await refreshData();
-    } catch (error) {
-      console.error("Failed to update feedback:", error);
-    }
-  };
-
-  const deleteFeedback = async (id: string) => {
-    try {
-      await api.deleteFeedback(id);
-      await refreshData();
-    } catch (error) {
-      console.error("Failed to delete feedback:", error);
-    }
-  };
-
   useEffect(() => {
     refreshData();
-    const interval = setInterval(refreshData, 30000); 
+    const interval = setInterval(refreshData, 60000); 
     return () => clearInterval(interval);
   }, [refreshData]);
 
@@ -114,15 +82,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       registrations, 
       feedbacks, 
       ideologyLogs,
+      quizSets,
+      quizScores,
       isLoading, 
       lastSync, 
       refreshData, 
       updateRegStatus,
       addIdeologyLog,
-      updateIdeologyLog,
-      deleteIdeologyLog,
-      updateFeedback,
-      deleteFeedback,
       isApiConfigured: true
     }}>
       {children}

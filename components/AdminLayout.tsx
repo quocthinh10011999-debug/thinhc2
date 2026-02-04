@@ -5,9 +5,10 @@ import {
   Shield, Users, Settings, LayoutDashboard, 
   LogOut, ChevronRight, Bell, User, 
   Monitor, Database, ShieldCheck, ClipboardCheck,
-  BrainCircuit, MessageSquare
+  BrainCircuit, BookOpen
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+// Fix: Import useTheme from ThemeContext.tsx
 import { useTheme } from '../context/ThemeContext';
 
 const AdminSidebar = () => {
@@ -18,10 +19,9 @@ const AdminSidebar = () => {
     { path: '/admin', label: 'Tổng quan', icon: LayoutDashboard },
     { path: '/admin/registrations', label: 'Quản lý Đăng ký', icon: ClipboardCheck },
     { path: '/admin/ideology', label: 'Công tác Tư tưởng', icon: BrainCircuit },
-    { path: '/admin/feedback', label: 'Quản lý Góp ý', icon: MessageSquare },
+    { path: '/admin/quiz', label: 'Quản lý Thi/Bộ đề', icon: BookOpen },
     { path: '/admin/users', label: 'Quản lý Nhân sự', icon: Users },
     { path: '/admin/settings', label: 'Tùy biến Giao diện', icon: Settings },
-    { path: '/admin/database', label: 'Dữ liệu & Bảo mật', icon: Database },
   ];
 
   return (
@@ -37,7 +37,7 @@ const AdminSidebar = () => {
           </div>
           <div className="overflow-hidden">
             <h2 className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] truncate">Admin Panel</h2>
-            <p className="text-[8px] font-bold text-white/40 uppercase">VMS Command v4.0</p>
+            <p className="text-[8px] font-bold text-white/40 uppercase">VMS Command v5.0</p>
           </div>
         </div>
       </div>
@@ -72,54 +72,13 @@ const AdminSidebar = () => {
   );
 };
 
-const AdminHeader = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  
-  return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-30 shadow-sm">
-      <div className="flex items-center space-x-4">
-        <Monitor className="w-4 h-4 text-slate-400" />
-        <h1 className="text-xs font-black uppercase text-slate-500 tracking-widest">Hệ thống Điều hành Trung tâm</h1>
-      </div>
-      
-      <div className="flex items-center space-x-6">
-        <button className="relative text-slate-400 hover:text-[#800000] transition-colors">
-          <Bell className="w-5 h-5" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
-        
-        <div className="h-8 w-px bg-slate-200"></div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="text-right">
-            <p className="text-[10px] font-black text-slate-900 uppercase">{user?.fullName}</p>
-            <p className="text-[8px] font-bold text-[#800000] uppercase tracking-tighter italic">Cấp bậc: Quản trị viên</p>
-          </div>
-          <button 
-            onClick={() => { logout(); navigate('/'); }}
-            className="p-2 bg-slate-100 hover:bg-[#800000] hover:text-white rounded-lg transition-all"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-};
-
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-
-  if (!user || user.role !== 'admin') {
-    return <Navigate to="/login" replace />;
-  }
-
+  if (!user || user.role !== 'admin') return <Navigate to="/login" replace />;
   return (
     <div className="flex min-h-screen bg-[#f8f9fa]">
       <AdminSidebar />
       <div className="flex-grow flex flex-col">
-        <AdminHeader />
         <main className="p-8 animate-subtle overflow-y-auto">
           {children}
         </main>

@@ -24,13 +24,8 @@ export interface Feedback {
 export interface IdeologyLog {
   id: string;
   soldierName: string;
-  rank: string;
-  position: string;
-  hometown: string; // Quê quán
-  squad: string;
-  platoon: string;
-  soldierUnit: string; // Đại đội
-  status: 'tốt' | 'khá' | 'trung bình' | 'stable' | 'concern' | 'urgent';
+  soldierUnit: string;
+  status: 'stable' | 'concern' | 'urgent';
   description: string;
   familyContext: string;
   officerNote: string;
@@ -42,4 +37,31 @@ export interface MusicTrack {
   title: string;
   url: string;
   isActive: boolean;
+}
+
+export interface QuizSet {
+  id: string;
+  title: string;
+  description: string;
+  timeMinutes: number;
+  createdAt: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  setId: string;
+  questionText: string;
+  options: string[];
+  correctIndex: number;
+}
+
+export interface QuizScore {
+  id: string;
+  userName: string;
+  unit: string;
+  score: number;
+  total: number;
+  setId: string;
+  setTitle?: string;
+  completedAt: string;
 }

@@ -6,117 +6,133 @@ import {
   MessageSquare, LogOut, Settings, LogIn, 
   Search, Calendar, Phone, Globe, Facebook, 
   Youtube, ChevronRight, Menu, X, RefreshCw,
-  LayoutDashboard, Volume2, VolumeX, Music
+  LayoutDashboard, Volume2, VolumeX, Music,
+  BrainCircuit, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+// Fix: Import useTheme from ThemeContext.tsx
 import { useTheme } from '../context/ThemeContext';
 import { useMusic } from '../context/MusicContext';
 
-const FloatingMusicPlayer = () => {
-  const { isPlaying, togglePlay, activeTrack } = useMusic();
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  if (!activeTrack) return null;
-
-  return (
-    <div className="fixed bottom-8 right-8 z-[60] flex items-center group">
-      <div className={`mr-4 bg-white/90 backdrop-blur-md border-2 border-[#800000] px-4 py-2 shadow-xl transition-all duration-500 overflow-hidden whitespace-nowrap ${showTooltip ? 'max-w-xs opacity-100' : 'max-w-0 opacity-0'}`}>
-        <p className="text-[9px] font-black text-[#800000] uppercase tracking-widest flex items-center">
-           <Music className="w-3 h-3 mr-2 animate-bounce" /> {activeTrack.title}
-        </p>
-      </div>
-      <button 
-        onClick={togglePlay}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-        className={`w-14 h-14 flex items-center justify-center rounded-full shadow-2xl transition-all duration-300 border-4 border-white ${isPlaying ? 'bg-[#800000] text-[#d4af37] rotate-[360deg]' : 'bg-slate-200 text-slate-400 hover:bg-[#800000] hover:text-[#d4af37]'}`}
-      >
-        {isPlaying ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
-        {isPlaying && (
-          <div className="absolute inset-0 rounded-full border-4 border-[#d4af37] animate-ping opacity-20"></div>
-        )}
-      </button>
-    </div>
-  );
-};
-
+// Fix: Implement missing TopBar component
 const TopBar = () => {
   const { config } = useTheme();
-  const [date, setDate] = useState('');
-  useEffect(() => {
-    const now = new Date();
-    setDate(now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
-  }, []);
-
   return (
-    <div className="bg-[#2d0000] py-1.5 hidden md:block border-b border-[#d4af37]/20">
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center text-[10px] font-medium text-white/50 uppercase tracking-widest">
+    <div className="bg-[#2d0000] text-white/50 py-2 px-6 border-b border-white/5 hidden md:block">
+      <div className="max-w-7xl mx-auto flex justify-between items-center text-[9px] font-black uppercase tracking-[0.2em]">
         <div className="flex items-center space-x-6">
-          <span className="flex items-center"><Calendar className="w-3 h-3 mr-2 text-[#d4af37]" /> {date}</span>
-          <span className="flex items-center border-l border-white/10 pl-6"><Phone className="w-3 h-3 mr-2 text-[#d4af37]" /> Hotline: {config.contactPhone}</span>
+          <span className="flex items-center"><Phone className="w-3 h-3 mr-2 text-[#d4af37]" /> Hotline: {config.contactPhone}</span>
+          <span className="flex items-center"><Globe className="w-3 h-3 mr-2 text-[#d4af37]" /> {config.contactAddress}</span>
         </div>
-        <div className="flex items-center space-x-5">
-          <div className="flex items-center space-x-3 pr-5 border-r border-white/10">
-            <Facebook className="w-3.5 h-3.5 hover:text-[#d4af37] transition-colors cursor-pointer" />
-            <Youtube className="w-3.5 h-3.5 hover:text-[#d4af37] transition-colors cursor-pointer" />
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-[#d4af37]">VN</span>
-            <span className="text-white/20">|</span>
-            <span className="hover:text-white cursor-pointer">EN</span>
-          </div>
+        <div className="flex items-center space-x-4">
+          <span className="text-[#d4af37]">Security Level: Restricted Area</span>
+          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
         </div>
       </div>
     </div>
   );
 };
 
+// Fix: Implement missing HeaderMain component
 const HeaderMain = () => {
-  const { config, isSyncing } = useTheme();
+  const { config } = useTheme();
   return (
-    <header className="bg-white pt-6 pb-6 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <Link to="/" className="flex items-center space-x-5 group">
-          <div className="bg-[#800000] w-16 h-16 rounded-lg shadow-lg group-hover:scale-105 transition-transform duration-300 flex items-center justify-center overflow-hidden">
+    <>
+      <TopBar />
+      <header className="bg-white py-6 px-6 border-b-4 border-[#800000]">
+        <div className="max-w-7xl mx-auto flex items-center space-x-6">
+          <div className="w-16 h-16 bg-[#800000] rounded-lg flex items-center justify-center overflow-hidden shrink-0">
             {config.logoUrl ? (
               <img src={config.logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
             ) : (
-              <Shield className="w-10 h-10 text-[#d4af37]" />
+              <Shield className="w-8 h-8 text-[#d4af37]" />
             )}
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center space-x-2">
-              <div className="h-[2px] w-6 bg-[#800000]"></div>
-              <span className="text-[10px] font-bold text-[#800000] uppercase tracking-[0.3em]">Cổng thông tin điện tử</span>
-              {isSyncing && (
-                <div className="flex items-center ml-4 text-[9px] font-black text-green-600 animate-pulse">
-                  <RefreshCw className="w-3 h-3 mr-1 animate-spin" /> SYNCING...
-                </div>
-              )}
-            </div>
-            <h1 className="text-2xl md:text-3xl font-black uppercase leading-tight tracking-tight mt-0.5" style={{ color: config.logoTextColor1 }}>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight" style={{ color: config.logoTextColor1 }}>
               {config.unitName.split(' ')[0]} <span style={{ color: config.logoTextColor2 }}>{config.unitName.split(' ').slice(1).join(' ')}</span>
             </h1>
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">{config.unitSubName}</span>
+            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-[0.3em]">{config.unitSubName}</p>
           </div>
-        </Link>
+        </div>
+      </header>
+    </>
+  );
+};
+
+// Fix: Implement missing FloatingMusicPlayer component
+const FloatingMusicPlayer = () => {
+  const { isPlaying, togglePlay, activeTrack } = useMusic();
+  if (!activeTrack) return null;
+
+  return (
+    <div className="fixed bottom-8 right-8 z-[100] flex items-center group">
+      <div className="bg-black/80 backdrop-blur-xl border border-[#d4af37]/30 p-2 rounded-full flex items-center space-x-0 group-hover:space-x-4 transition-all pr-2 group-hover:pr-6 shadow-2xl overflow-hidden">
+        <button 
+          onClick={togglePlay}
+          className={`w-12 h-12 flex items-center justify-center rounded-full transition-all ${isPlaying ? 'bg-[#d4af37] text-[#800000]' : 'bg-white/10 text-white hover:bg-white/20'}`}
+        >
+          {isPlaying ? <Volume2 className="w-5 h-5 animate-pulse" /> : <VolumeX className="w-5 h-5" />}
+        </button>
+        <div className="w-0 group-hover:w-40 transition-all overflow-hidden">
+          <p className="text-[8px] font-black text-[#d4af37] uppercase tracking-widest leading-none mb-1">Âm nhạc đơn vị</p>
+          <p className="text-[10px] font-bold text-white uppercase truncate">{activeTrack.title}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Fix: Implement missing Footer component
+const Footer = () => {
+  const { config } = useTheme();
+  return (
+    <footer className="bg-[#1a1a1a] text-white py-16 px-6 border-t-8 border-[#d4af37]">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="space-y-6">
+          <div className="flex items-center space-x-3">
+            <Shield className="w-8 h-8 text-[#d4af37]" />
+            <span className="text-xl font-black tracking-tighter uppercase">{config.unitName}</span>
+          </div>
+          <p className="text-white/40 text-xs leading-relaxed font-medium uppercase tracking-wider">
+            {config.slogan}
+          </p>
+        </div>
         
-        <div className="hidden lg:flex items-center space-x-10">
-          <div className="flex flex-col items-end">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Cơ quan thường trực</span>
-            <span className="text-[12px] font-bold text-[#800000] border-b-2 border-[#d4af37]">TRỰC BAN TIỂU ĐOÀN</span>
+        <div className="space-y-6">
+          <h4 className="text-[#d4af37] text-xs font-black uppercase tracking-widest">Liên hệ đơn vị</h4>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 text-white/60">
+              <Phone className="w-4 h-4 text-[#d4af37]" />
+              <span className="text-[11px] font-bold">{config.contactPhone}</span>
+            </div>
+            <div className="flex items-center space-x-3 text-white/60">
+              <Globe className="w-4 h-4 text-[#d4af37]" />
+              <span className="text-[11px] font-bold">{config.contactAddress}</span>
+            </div>
           </div>
-          <div className="relative">
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm..." 
-              className="pl-10 pr-4 py-2 text-[12px] bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#800000] focus:bg-white transition-all w-48 font-medium" 
-            />
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#800000]" />
+        </div>
+
+        <div className="space-y-6">
+          <h4 className="text-[#d4af37] text-xs font-black uppercase tracking-widest">Truyền thông</h4>
+          <div className="flex space-x-4">
+            <a href="#" className="p-3 bg-white/5 hover:bg-[#d4af37] hover:text-[#800000] transition-all rounded-full">
+              <Facebook className="w-4 h-4" />
+            </a>
+            <a href="#" className="p-3 bg-white/5 hover:bg-[#d4af37] hover:text-[#800000] transition-all rounded-full">
+              <Youtube className="w-4 h-4" />
+            </a>
           </div>
         </div>
       </div>
-    </header>
+      <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">{config.footerCopyright}</p>
+        <div className="flex items-center space-x-2 text-[10px] font-bold text-white/20 uppercase">
+          <ShieldCheck className="w-3 h-3" />
+          <span>VMS Command v5.0.0</span>
+        </div>
+      </div>
+    </footer>
   );
 };
 
@@ -131,6 +147,7 @@ const Navbar = () => {
     { path: '/quy-dinh', label: 'Quy định', icon: BookOpen },
     { path: '/truyen-thong', label: 'Truyền thống', icon: History },
     { path: '/dang-ky', label: 'Đăng ký', icon: UserPlus },
+    { path: '/thi-nhan-thuc', label: 'Thi nhận thức', icon: BrainCircuit },
     { path: '/gop-y', label: 'Góp ý', icon: MessageSquare },
   ];
 
@@ -189,76 +206,14 @@ const Navbar = () => {
   );
 };
 
-const Footer = () => {
-  const { config } = useTheme();
-  return (
-    <footer className="bg-[#d4af37] text-[#800000] pt-20 pb-10 border-t-8 border-[#800000]">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-16 pb-16 border-b border-[#800000]/20">
-          <div className="md:col-span-5 space-y-8">
-            <div className="flex items-center space-x-5">
-              <div className="bg-[#800000] w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden">
-                {config.logoUrl ? (
-                  <img src={config.logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
-                ) : (
-                  <Shield className="w-10 h-10 text-[#d4af37]" />
-                )}
-              </div>
-              <div>
-                <h3 className="text-[#800000] font-black text-xl uppercase tracking-tight">{config.unitName}</h3>
-                <p className="text-[10px] text-white bg-[#800000] px-2 py-0.5 font-black uppercase tracking-[0.2em] inline-block">{config.slogan}</p>
-              </div>
-            </div>
-            <p className="text-[13px] leading-relaxed italic border-l-4 border-[#800000] pl-6 font-semibold">
-              "Sẵn sàng chiến đấu hy sinh vì độc lập tự do của Tổ quốc, vì chủ nghĩa xã hội. Nhiệm vụ nào cũng hoàn thành, khó khăn nào cũng vượt qua, kẻ thù nào cũng đánh thắng."
-            </p>
-          </div>
-          <div className="md:col-span-4">
-            <h4 className="text-[#800000] font-black text-xs uppercase mb-8 tracking-widest underline decoration-[#800000] decoration-2 underline-offset-8">Thông tin liên hệ</h4>
-            <div className="text-[13px] space-y-5 font-bold">
-              <p className="flex items-start">
-                <Globe className="w-5 h-5 mr-4 text-[#800000] shrink-0" /> 
-                <span>{config.contactAddress}</span>
-              </p>
-              <p className="flex items-center">
-                <Phone className="w-5 h-5 mr-4 text-[#800000] shrink-0" /> 
-                <span>{config.contactPhone}</span>
-              </p>
-            </div>
-          </div>
-          <div className="md:col-span-3">
-            <h4 className="text-[#800000] font-black text-xs uppercase mb-8 tracking-widest underline decoration-[#800000] decoration-2 underline-offset-8">Liên kết</h4>
-            <ul className="text-[13px] space-y-4 font-bold">
-              {['Báo Quân đội nhân dân', 'Bộ Quốc phòng', 'Truyền hình Quốc phòng'].map((link) => (
-                <li key={link} className="hover:text-white transition-colors cursor-pointer flex items-center group">
-                   <ChevronRight className="w-3.5 h-3.5 mr-2 text-[#800000]" /> {link}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <div className="pt-10 flex flex-col md:flex-row justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#800000]">
-          <p>{config.footerCopyright}</p>
-          <div className="mt-4 md:mt-0 flex space-x-8">
-             <span className="hover:text-white cursor-pointer transition-colors">Bảo mật</span>
-             <span className="hover:text-white cursor-pointer transition-colors">Điều khoản</span>
-             <span className="text-[#800000]/60">VERSION {config.version}</span>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-};
-
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col">
-      <TopBar />
       <HeaderMain />
       <Navbar />
       <main className="flex-grow animate-subtle">{children}</main>
-      <FloatingMusicPlayer />
       <Footer />
+      <FloatingMusicPlayer />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../services/api';
 import { MusicTrack } from '../types';
@@ -16,6 +15,7 @@ interface MusicContextType {
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
 
+// Fix: Complete MusicProvider implementation and ensure it returns a valid ReactNode
 export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tracks, setTracks] = useState<MusicTrack[]>([]);
   const [activeTrack, setActiveTrack] = useState<MusicTrack | null>(null);
@@ -80,8 +80,9 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       audioRef.current.onplay = () => setIsPlaying(true);
       audioRef.current.onpause = () => setIsPlaying(false);
       
-      audioRef.current.onerror = (e) => {
-        const error = (e.target as HTMLAudioElement).error;
+      // Fix: Access audioRef.current.error directly instead of using event.target to avoid TS error
+      audioRef.current.onerror = () => {
+        const error = audioRef.current?.error;
         let errorMessage = "Lỗi âm thanh không xác định";
         
         if (error) {
@@ -102,57 +103,27 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // 3. Chỉ cập nhật nguồn nếu URL thực sự thay đổi và hợp lệ
     if (currentUrlRef.current !== activeTrack.url) {
       try {
-        setIsPlaying(false);
-        audioRef.current.pause();
         audioRef.current.src = activeTrack.url;
-        audioRef.current.load();
         currentUrlRef.current = activeTrack.url;
-      } catch (err) {
-        console.error("Failed to set audio source:", err);
+        // If it was playing, try to continue with the new source
+        if (isPlaying) {
+          audioRef.current.play().catch(e => console.warn("Auto-play blocked after source change:", e));
+        }
+      } catch (e) {
+        console.error("Error updating audio source:", e);
       }
     }
-
-    // 4. Xử lý tương tác người dùng để tự động phát
-    const handleFirstInteraction = () => {
-      if (audioRef.current && !isPlaying && activeTrack?.url) {
-        if (audioRef.current.readyState >= 2) {
-            audioRef.current.play()
-              .then(() => {
-                setIsPlaying(true);
-                window.removeEventListener('click', handleFirstInteraction);
-              })
-              .catch(e => {
-                console.warn("Autoplay attempt failed:", e.message);
-              });
-        }
-      }
-    };
-    
-    window.addEventListener('click', handleFirstInteraction);
-    return () => window.removeEventListener('click', handleFirstInteraction);
-  }, [activeTrack]);
+  }, [activeTrack, isPlaying]);
 
   const togglePlay = () => {
-    const validation = isValidAudioUrl(activeTrack?.url || '');
-    if (!audioRef.current || !activeTrack?.url || (typeof validation === 'object' && !validation.valid)) {
-      alert(typeof validation === 'object' ? validation.message : "Vui lòng tải file nhạc lên để phát.");
-      return;
-    }
-
+    if (!audioRef.current || !activeTrack) return;
     if (isPlaying) {
       audioRef.current.pause();
     } else {
-      if (!audioRef.current.src || audioRef.current.src === window.location.href) {
-        audioRef.current.src = activeTrack.url;
-        audioRef.current.load();
-      }
-
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch(err => {
-          console.error("Manual toggle play failed:", err.message);
-          setIsPlaying(false);
-        });
+      audioRef.current.play().catch(e => {
+        console.error("Playback failed:", e);
+        setIsPlaying(false);
+      });
     }
   };
 
@@ -160,23 +131,17 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       await api.setActiveMusic(id);
       await refreshMusic();
-    } catch (e) {
-      console.error("Failed to set active track:", e);
+    } catch (error) {
+      console.error("Failed to update active track:", error);
     }
   };
 
   const addTrack = async (title: string, url: string) => {
-    if (!title || !url) return;
-    const validation = isValidAudioUrl(url);
-    if (typeof validation === 'object' && !validation.valid) {
-      alert(validation.message);
-      return;
-    }
     try {
       await api.addMusic(title, url);
       await refreshMusic();
-    } catch (e) {
-      console.error("Failed to add track:", e);
+    } catch (error) {
+      console.error("Failed to add track:", error);
     }
   };
 
@@ -184,21 +149,28 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       await api.deleteMusic(id);
       await refreshMusic();
-    } catch (e) {
-      console.error("Failed to remove track:", e);
+    } catch (error) {
+      console.error("Failed to remove track:", error);
     }
   };
 
   return (
     <MusicContext.Provider value={{ 
-      tracks, activeTrack, isPlaying, togglePlay, 
-      refreshMusic, updateActiveTrack, addTrack, removeTrack 
+      tracks, 
+      activeTrack, 
+      isPlaying, 
+      togglePlay, 
+      refreshMusic, 
+      updateActiveTrack, 
+      addTrack, 
+      removeTrack 
     }}>
       {children}
     </MusicContext.Provider>
   );
 };
 
+// Fix: Export useMusic hook for other components to use
 export const useMusic = () => {
   const context = useContext(MusicContext);
   if (!context) throw new Error('useMusic must be used within MusicProvider');
