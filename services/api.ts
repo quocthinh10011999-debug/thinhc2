@@ -88,9 +88,11 @@ class ApiService {
             summary TEXT NOT NULL,
             content TEXT NOT NULL,
             image_url TEXT,
+            source_url TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
+        await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS source_url TEXT`;
 
         await sql`INSERT INTO users (username, full_name, role, password) VALUES ('admin', 'Sĩ quan Trực ban', 'admin', 'admin123') ON CONFLICT (username) DO NOTHING`;
 
@@ -104,7 +106,7 @@ class ApiService {
               'Huấn luyện',
               'Đợt bắn đạn thật hoàn thành 100% chỉ tiêu đề ra, bảo đảm an toàn tuyệt đối về người và vũ khí trang bị kỹ thuật.',
               'Nhằm đánh giá thực chất kết quả huấn luyện kỹ, chiến thuật bài bắn đạn thật súng chống tăng SPG-9, Tiểu đoàn 15 đã tổ chức đợt diễn tập kiểm tra bắn chiến đấu cấp tiểu đội và trung đội tại trường bắn Quân khu. Nhờ làm tốt công tác chuẩn bị vũ khí, khí tài và quán triệt nghiêm quy định an toàn, 100% cán bộ, chiến sĩ tham gia bắn đạt yêu cầu, trong đó có hơn 85% đạt Khá và Giỏi. Chỉ huy Sư đoàn đã biểu dương tinh thần chủ động khắc phục khó khăn, làm chủ vũ khí trang bị mới của toàn đơn vị.',
-              'https://images.unsplash.com/photo-1590247813693-5541d1c609fd?auto=format&fit=crop&q=80&w=800'
+              'https://images.unsplash.com/photo-1590247813693-5541d1c609fd?auto=format&fit=crop&q=80&w=800,https://images.unsplash.com/photo-1579913741617-3844a30a213a?auto=format&fit=crop&q=80&w=800,https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=800'
             ),
             (
               'Đoàn thanh niên Tiểu đoàn phát động Tháng thi đua cao điểm Quyết thắng',
@@ -226,13 +228,13 @@ class ApiService {
   // --- NEWS API ---
   async getNews() {
     await this.ensureSchema();
-    const rows = await sql`SELECT id::text as id, title, category, summary, content, image_url as "imageUrl", created_at as "createdAt" FROM news ORDER BY created_at DESC`;
+    const rows = await sql`SELECT id::text as id, title, category, summary, content, image_url as "imageUrl", source_url as "sourceUrl", created_at as "createdAt" FROM news ORDER BY created_at DESC`;
     return rows;
   }
 
   async createNews(data: any) {
     await this.ensureSchema();
-    return await sql`INSERT INTO news (title, category, summary, content, image_url) VALUES (${data.title}, ${data.category}, ${data.summary}, ${data.content}, ${data.imageUrl || null}) RETURNING id::text as id`;
+    return await sql`INSERT INTO news (title, category, summary, content, image_url, source_url) VALUES (${data.title}, ${data.category}, ${data.summary}, ${data.content}, ${data.imageUrl || null}, ${data.sourceUrl || null}) RETURNING id::text as id`;
   }
 
   async deleteNews(id: string) {

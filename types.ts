@@ -73,6 +73,7 @@ export interface NewsItem {
   summary: string;
   content: string;
   imageUrl?: string;
+  sourceUrl?: string;
   createdAt: string;
 }
 
