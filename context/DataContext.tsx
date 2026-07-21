@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
-import { IdeologyLog, QuizSet, QuizScore } from '../types';
+import { IdeologyLog, QuizSet, QuizScore, NewsItem } from '../types';
 
 interface DataContextType {
   registrations: any[];
@@ -9,11 +9,14 @@ interface DataContextType {
   ideologyLogs: IdeologyLog[];
   quizSets: QuizSet[];
   quizScores: QuizScore[];
+  news: NewsItem[];
   isLoading: boolean;
   lastSync: Date | null;
   refreshData: () => Promise<void>;
   updateRegStatus: (id: string, status: string) => Promise<void>;
   addIdeologyLog: (data: any) => Promise<void>;
+  addNews: (data: any) => Promise<void>;
+  deleteNews: (id: string) => Promise<void>;
   isApiConfigured: boolean;
 }
 
@@ -25,6 +28,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [ideologyLogs, setIdeologyLogs] = useState<IdeologyLog[]>([]);
   const [quizSets, setQuizSets] = useState<QuizSet[]>([]);
   const [quizScores, setQuizScores] = useState<QuizScore[]>([]);
+  const [news, setNews] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastSync, setLastSync] = useState<Date | null>(null);
 
@@ -33,18 +37,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await api.ensureSchema();
       
-      const [regs, feeds, logs, sets, scores] = await Promise.all([
+      const [regs, feeds, logs, sets, scores, newsData] = await Promise.all([
         api.getRegistrations(),
         api.getFeedbacks(),
         api.getIdeologyLogs(),
         api.getQuizSets(),
-        api.getScores()
+        api.getScores(),
+        api.getNews()
       ]);
       setRegistrations(regs);
       setFeedbacks(feeds);
       setIdeologyLogs(logs as any);
       setQuizSets(sets as any);
       setQuizScores(scores as any);
+      setNews(newsData as any);
       setLastSync(new Date());
     } catch (error) {
       console.error("[POSTGRES] Sync error:", error);
@@ -71,6 +77,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const addNews = async (data: any) => {
+    try {
+      await api.createNews(data);
+      await refreshData();
+    } catch (error) {
+      console.error("Failed to add news:", error);
+    }
+  };
+
+  const deleteNews = async (id: string) => {
+    try {
+      await api.deleteNews(id);
+      await refreshData();
+    } catch (error) {
+      console.error("Failed to delete news:", error);
+    }
+  };
+
   useEffect(() => {
     refreshData();
     const interval = setInterval(refreshData, 60000); 
@@ -84,11 +108,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ideologyLogs,
       quizSets,
       quizScores,
+      news,
       isLoading, 
       lastSync, 
       refreshData, 
       updateRegStatus,
       addIdeologyLog,
+      addNews,
+      deleteNews,
       isApiConfigured: true
     }}>
       {children}

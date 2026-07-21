@@ -5,7 +5,7 @@ import {
   Shield, Users, Settings, LayoutDashboard, 
   LogOut, ChevronRight, Bell, User, 
   Monitor, Database, ShieldCheck, ClipboardCheck,
-  BrainCircuit, BookOpen
+  BrainCircuit, BookOpen, Newspaper
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 // Fix: Import useTheme from ThemeContext.tsx
@@ -20,6 +20,7 @@ const AdminSidebar = () => {
     { path: '/admin/registrations', label: 'Quản lý Đăng ký', icon: ClipboardCheck },
     { path: '/admin/ideology', label: 'Công tác Tư tưởng', icon: BrainCircuit },
     { path: '/admin/quiz', label: 'Quản lý Thi/Bộ đề', icon: BookOpen },
+    { path: '/admin/news', label: 'Quản lý Bản tin', icon: Newspaper },
     { path: '/admin/users', label: 'Quản lý Nhân sự', icon: Users },
     { path: '/admin/settings', label: 'Tùy biến Giao diện', icon: Settings },
   ];

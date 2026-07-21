@@ -7,7 +7,7 @@ import {
   Search, Calendar, Phone, Globe, Facebook, 
   Youtube, ChevronRight, Menu, X, RefreshCw,
   LayoutDashboard, Volume2, VolumeX, Music,
-  BrainCircuit, ShieldCheck
+  BrainCircuit, ShieldCheck, Newspaper
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 // Fix: Import useTheme from ThemeContext.tsx
@@ -144,6 +144,7 @@ const Navbar = () => {
   
   const navItems = [
     { path: '/', label: 'Trang chủ', icon: Home },
+    { path: '/tin-tuc', label: 'Tin tức', icon: Newspaper },
     { path: '/quy-dinh', label: 'Quy định', icon: BookOpen },
     { path: '/truyen-thong', label: 'Truyền thống', icon: History },
     { path: '/dang-ky', label: 'Đăng ký', icon: UserPlus },

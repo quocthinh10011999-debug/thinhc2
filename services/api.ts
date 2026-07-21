@@ -80,8 +80,48 @@ class ApiService {
         await sql`CREATE TABLE IF NOT EXISTS theme_settings (key TEXT PRIMARY KEY, config JSONB, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
         await sql`CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, full_name TEXT NOT NULL, role TEXT NOT NULL, password TEXT DEFAULT '123', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
         await sql`CREATE TABLE IF NOT EXISTS background_music (id SERIAL PRIMARY KEY, title TEXT NOT NULL, url TEXT NOT NULL, is_active BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
+        await sql`
+          CREATE TABLE IF NOT EXISTS news (
+            id SERIAL PRIMARY KEY,
+            title TEXT NOT NULL,
+            category TEXT NOT NULL,
+            summary TEXT NOT NULL,
+            content TEXT NOT NULL,
+            image_url TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `;
 
         await sql`INSERT INTO users (username, full_name, role, password) VALUES ('admin', 'Sĩ quan Trực ban', 'admin', 'admin123') ON CONFLICT (username) DO NOTHING`;
+
+        // Seeding dữ liệu mẫu cho News
+        const newsCount = await sql`SELECT count(*) FROM news`;
+        if (parseInt(newsCount[0].count) === 0) {
+          await sql`
+            INSERT INTO news (title, category, summary, content, image_url) VALUES 
+            (
+              'Tiểu đoàn 15 hoàn thành xuất sắc đợt kiểm tra bắn đạn thật SPG-9',
+              'Huấn luyện',
+              'Đợt bắn đạn thật hoàn thành 100% chỉ tiêu đề ra, bảo đảm an toàn tuyệt đối về người và vũ khí trang bị kỹ thuật.',
+              'Nhằm đánh giá thực chất kết quả huấn luyện kỹ, chiến thuật bài bắn đạn thật súng chống tăng SPG-9, Tiểu đoàn 15 đã tổ chức đợt diễn tập kiểm tra bắn chiến đấu cấp tiểu đội và trung đội tại trường bắn Quân khu. Nhờ làm tốt công tác chuẩn bị vũ khí, khí tài và quán triệt nghiêm quy định an toàn, 100% cán bộ, chiến sĩ tham gia bắn đạt yêu cầu, trong đó có hơn 85% đạt Khá và Giỏi. Chỉ huy Sư đoàn đã biểu dương tinh thần chủ động khắc phục khó khăn, làm chủ vũ khí trang bị mới của toàn đơn vị.',
+              'https://images.unsplash.com/photo-1590247813693-5541d1c609fd?auto=format&fit=crop&q=80&w=800'
+            ),
+            (
+              'Đoàn thanh niên Tiểu đoàn phát động Tháng thi đua cao điểm Quyết thắng',
+              'Học tập',
+              'Đoàn cơ sở phát động đợt thi đua sôi nổi lập thành tích chào mừng ngày thành lập lực lượng vũ trang nhân dân.',
+              'Sáng nay, Ban Chấp hành Đoàn cơ sở Tiểu đoàn 15 đã phát động phong trào thi đua cao điểm với chủ đề "Tuổi trẻ Tiểu đoàn 15 xung kích, lập công, tô thắm truyền thống truyền thống quyết thắng". Nội dung thi đua tập trung vào việc nâng cao giờ tự học chính trị, nâng cao thể lực qua các hội thao thể dục thể thao, và xây dựng cảnh quan môi trường đơn vị sáng - xanh - sạch - đẹp. Toàn bộ 100% chi đoàn đã ký kết giao ước thi đua với quyết tâm giành nhiều "Bông hoa điểm 10" dâng lên Đảng bộ đơn vị.',
+              'https://images.unsplash.com/photo-1579913741617-3844a30a213a?auto=format&fit=crop&q=80&w=800'
+            ),
+            (
+              'Đại hội Quân nhân nhiệm kỳ mới: Đẩy mạnh đối thoại dân chủ ở cơ sở',
+              'Chính trị',
+              'Hội nghị phát huy tinh thần dân chủ, thảo luận sâu sắc về các chế độ chính sách và nâng cao đời sống chiến sĩ.',
+              'Chiều ngày 18/07, Tiểu đoàn 15 đã tiến hành Đại hội Quân nhân nhiệm kỳ 2026-2027 thành công tốt đẹp. Đại hội ghi nhận nhiều ý kiến đóng góp tâm huyết, thẳng thắn của các chiến sĩ hạ sĩ quan về công tác huấn luyện, bảo đảm hậu cần, đời sống tinh thần và chế độ trực gác. Phát biểu tại Đại hội, Chỉ huy trưởng nhấn mạnh tinh thần dân chủ là chìa khóa để tạo nên khối đoàn kết thống nhất cao, giúp chiến sĩ coi đơn vị là nhà, đồng chí đồng đội là anh em ruột thịt, sẵn sàng nhận và hoàn thành mọi nhiệm vụ được giao.',
+              'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=800'
+            )
+          `;
+        }
         
         // Seeding dữ liệu mẫu cho Quiz
         const setsCount = await sql`SELECT count(*) FROM quiz_sets`;
@@ -182,6 +222,23 @@ class ApiService {
   async getFeedbacks() { await this.ensureSchema(); const rows = await sql`SELECT * FROM feedbacks ORDER BY created_at DESC`; return rows.map(r => ({ ...r, id: r.id.toString() })); }
   async getThemeConfig() { await this.ensureSchema(); const rows = await sql`SELECT config FROM theme_settings WHERE key = 'global'`; return rows.length > 0 ? rows[0].config : null; }
   async saveThemeConfig(config: any) { await this.ensureSchema(); return await sql`INSERT INTO theme_settings (key, config) VALUES ('global', ${config}) ON CONFLICT (key) DO UPDATE SET config = ${config}, updated_at = CURRENT_TIMESTAMP`; }
+
+  // --- NEWS API ---
+  async getNews() {
+    await this.ensureSchema();
+    const rows = await sql`SELECT id::text as id, title, category, summary, content, image_url as "imageUrl", created_at as "createdAt" FROM news ORDER BY created_at DESC`;
+    return rows;
+  }
+
+  async createNews(data: any) {
+    await this.ensureSchema();
+    return await sql`INSERT INTO news (title, category, summary, content, image_url) VALUES (${data.title}, ${data.category}, ${data.summary}, ${data.content}, ${data.imageUrl || null}) RETURNING id::text as id`;
+  }
+
+  async deleteNews(id: string) {
+    await this.ensureSchema();
+    return await sql`DELETE FROM news WHERE id = ${parseInt(id)}`;
+  }
 }
 
 export const api = new ApiService();

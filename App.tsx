@@ -10,12 +10,14 @@ import Registration from './pages/Registration';
 import FeedbackPage from './pages/Feedback';
 import QuizPortal from './pages/QuizPortal';
 import Login from './pages/Login';
+import News from './pages/News';
 import AccountManagement from './pages/AccountManagement';
 import SystemSettings from './pages/SystemSettings';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminRegistrations from './pages/AdminRegistrations';
 import AdminIdeology from './pages/AdminIdeology';
 import AdminQuiz from './pages/AdminQuiz';
+import AdminNews from './pages/AdminNews';
 import { AuthProvider } from './context/AuthContext';
 // Fix: Import ThemeProvider from ThemeContext.tsx instead of non-existent ThemeProvider.tsx
 import { ThemeProvider } from './context/ThemeContext';
@@ -32,6 +34,7 @@ const App: React.FC = () => {
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Layout><Home /></Layout>} />
+                <Route path="/tin-tuc" element={<Layout><News /></Layout>} />
                 <Route path="/quy-dinh" element={<Layout><Regulations /></Layout>} />
                 <Route path="/truyen-thong" element={<Layout><Traditions /></Layout>} />
                 <Route path="/dang-ky" element={<Layout><Registration /></Layout>} />
@@ -44,6 +47,7 @@ const App: React.FC = () => {
                 <Route path="/admin/registrations" element={<AdminLayout><AdminRegistrations /></AdminLayout>} />
                 <Route path="/admin/ideology" element={<AdminLayout><AdminIdeology /></AdminLayout>} />
                 <Route path="/admin/quiz" element={<AdminLayout><AdminQuiz /></AdminLayout>} />
+                <Route path="/admin/news" element={<AdminLayout><AdminNews /></AdminLayout>} />
                 <Route path="/admin/users" element={<AdminLayout><AccountManagement /></AdminLayout>} />
                 <Route path="/admin/settings" element={<AdminLayout><SystemSettings /></AdminLayout>} />
               </Routes>

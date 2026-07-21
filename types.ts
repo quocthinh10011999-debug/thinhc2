@@ -65,3 +65,14 @@ export interface QuizScore {
   setTitle?: string;
   completedAt: string;
 }
+
+export interface NewsItem {
+  id: string;
+  title: string;
+  category: string;
+  summary: string;
+  content: string;
+  imageUrl?: string;
+  createdAt: string;
+}
+
